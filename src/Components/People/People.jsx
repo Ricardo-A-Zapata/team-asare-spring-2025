@@ -98,7 +98,9 @@ function People() {
 
   const fetchPeople = () => {
     axios.get(PEOPLE_READ_ENDPOINT)
-      .then(({ data }) => { setPeople(peopleObjectToArray(data)) })
+      .then(
+        ({ data }) => { setPeople(peopleObjectToArray(data)) }
+    )
       .catch((error) => setError(`There was a problem retrieving the list of people. ${error}`));
   };
 
