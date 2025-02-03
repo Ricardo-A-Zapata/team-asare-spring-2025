@@ -9,9 +9,9 @@ import {
 import './App.css';
 
 import Navbar from './Components/Navbar';
-import People from './Components/People';
+import Users from './Components/Users';
 
-function PersonPage() {
+function UserPage() {
   const { name } = useParams();
   return <h1>{name}</h1>
 }
@@ -23,8 +23,8 @@ function App() {
       <Routes>
         {/* For a different home page, do:
          <Route index element={<Login />} /> */}
-        <Route path="people" element={<People />} />
-        <Route path="people/:name" element={<PersonPage />} />
+        <Route path="users" element={<Users />} />
+        <Route path="users/:name" element={<UserPage />} />
       </Routes>
     </BrowserRouter>
   );

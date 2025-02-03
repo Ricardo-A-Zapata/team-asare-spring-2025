@@ -150,7 +150,7 @@ nav a:focus {
   outline: none;
 }
 
-.person-container {
+.user-container {
   border: 2px solid var(--accent-color);
   margin: 1rem 0;
   padding: 2rem;
@@ -159,8 +159,8 @@ nav a:focus {
   border-radius: 5px;
 }
 
-.person-container p,
-.person-container h2 {
+.user-container p,
+.user-container h2 {
   margin: 0;
   font-size: 1.5rem;
 }

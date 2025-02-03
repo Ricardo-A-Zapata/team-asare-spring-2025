@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import propTypes from 'prop-types';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
- 
+
 import { BACKEND_URL } from '../../constants';
 
-const PEOPLE_READ_ENDPOINT = `${BACKEND_URL}/people`;
-const PEOPLE_CREATE_ENDPOINT = `${BACKEND_URL}/people/create`;
+const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
+const USERS_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
 
-function AddPersonForm({
+function AddUserForm({
   visible,
   cancel,
-  fetchPeople,
+  fetchUsers,
   setError,
 }) {
   const [name, setName] = useState('');
@@ -20,15 +20,15 @@ function AddPersonForm({
   const changeName = (event) => { setName(event.target.value); };
   const changeEmail = (event) => { setEmail(event.target.value); };
 
-  const addPerson = (event) => {
+  const addUser = (event) => {
     event.preventDefault();
-    const newPerson = {
+    const newUser = {
       name: name,
       email: email,
     }
-    axios.put(PEOPLE_CREATE_ENDPOINT, newPerson)
-      .then(fetchPeople)
-      .catch((error) => { setError(`There was a problem adding the person. ${error}`); });
+    axios.put(USERS_CREATE_ENDPOINT, newUser)
+      .then(fetchUsers)
+      .catch((error) => { setError(`There was a problem adding the user. ${error}`); });
   };
 
   if (!visible) return null;
@@ -43,14 +43,14 @@ function AddPersonForm({
       </label>
       <input required type="text" id="email" onChange={changeEmail} />
       <button type="button" onClick={cancel}>Cancel</button>
-      <button type="submit" onClick={addPerson}>Submit</button>
+      <button type="submit" onClick={addUser}>Submit</button>
     </form>
   );
 }
-AddPersonForm.propTypes = {
+AddUserForm.propTypes = {
   visible: propTypes.bool.isRequired,
   cancel: propTypes.func.isRequired,
-  fetchPeople: propTypes.func.isRequired,
+  fetchUsers: propTypes.func.isRequired,
   setError: propTypes.func.isRequired,
 };
 
@@ -65,11 +65,11 @@ ErrorMessage.propTypes = {
   message: propTypes.string.isRequired,
 };
 
-function Person({ person }) {
-  const { name, email } = person;
+function User({ user }) {
+  const { name, email } = user;
   return (
     <Link to={name}>
-      <div className="person-container">
+      <div className="user-container">
         <h2>{name}</h2>
         <p>
           Email: {email}
@@ -78,57 +78,57 @@ function Person({ person }) {
     </Link>
   );
 }
-Person.propTypes = {
-  person: propTypes.shape({
+User.propTypes = {
+  user: propTypes.shape({
     name: propTypes.string.isRequired,
     email: propTypes.string.isRequired,
   }).isRequired,
 };
 
-function peopleObjectToArray(Data) {
+function usersObjectToArray(Data) {
   const keys = Object.keys(Data);
-  const people = keys.map((key) => Data[key]);
-  return people;
+  const users = keys.map((key) => Data[key]);
+  return users;
 }
 
-function People() {
+function Users() {
   const [error, setError] = useState('');
-  const [people, setPeople] = useState([]);
-  const [addingPerson, setAddingPerson] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [addingUser, setAddingUser] = useState(false);
 
-  const fetchPeople = () => {
-    axios.get(PEOPLE_READ_ENDPOINT)
-      .then(
-        ({ data }) => { setPeople(peopleObjectToArray(data)) }
+  const fetchUsers = () => {
+    axios.get(USERS_READ_ENDPOINT)
+      .then(({ data }) => {
+        setUsers(usersObjectToArray(data.Users)) }
     )
-      .catch((error) => setError(`There was a problem retrieving the list of people. ${error}`));
+      .catch((error) => setError(`There was a problem retrieving the list of users. ${error}`));
   };
 
-  const showAddPersonForm = () => { setAddingPerson(true); };
-  const hideAddPersonForm = () => { setAddingPerson(false); };
+  const showAddUserForm = () => { setAddingUser(true); };
+  const hideAddUserForm = () => { setAddingUser(false); };
 
-  useEffect(fetchPeople, []);
+  useEffect(fetchUsers, []);
 
   return (
     <div className="wrapper">
       <header>
         <h1>
-          View All People
+          View All Users
         </h1>
-        <button type="button" onClick={showAddPersonForm}>
-          Add a Person
+        <button type="button" onClick={showAddUserForm}>
+          Add a User
         </button>
       </header>
-      <AddPersonForm
-        visible={addingPerson}
-        cancel={hideAddPersonForm}
-        fetchPeople={fetchPeople}
+      <AddUserForm
+        visible={addingUser}
+        cancel={hideAddUserForm}
+        fetchUsers={fetchUsers}
         setError={setError}
       />
       {error && <ErrorMessage message={error} />}
-      {people.map((person) => <Person key={person.name} person={person} />)}
+      {users.map((user) => <User key={user.name} user={user} />)}
     </div>
   );
 }
 
-export default People;
+export default Users;
