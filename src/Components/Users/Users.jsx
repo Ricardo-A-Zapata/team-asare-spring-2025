@@ -7,6 +7,7 @@ import { BACKEND_URL } from '../../constants';
 
 const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
 const USERS_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
+const USER_DELETE_ENDPOINT = `${BACKEND_URL}/user/delete`;
 
 function AddUserForm({
   visible,
@@ -72,17 +73,24 @@ ErrorMessage.propTypes = {
   message: propTypes.string.isRequired,
 };
 
-function User({ user }) {
+function User({ user, onDelete }) {
   const { name, email } = user;
+  const handleDelete = () => 
+  {
+    if (window.confirm(`Are you sure you want to delete ${name}?`)) {
+      onDelete(email);
+    }
+  };
   return (
-    <Link to={name}>
-      <div className="user-container">
+    <div className="user-container">
+      <Link to={name}>
         <h2>{name}</h2>
         <p>
           Email: {email}
         </p>
-      </div>
-    </Link>
+      </Link>
+      <button type="button" onClick={handleDelete}>Delete</button>
+    </div>
   );
 }
 User.propTypes = {
@@ -90,6 +98,7 @@ User.propTypes = {
     name: propTypes.string.isRequired,
     email: propTypes.string.isRequired,
   }).isRequired,
+  onDelete: propTypes.func.isRequired,
 };
 
 function usersObjectToArray(Data) {
@@ -109,6 +118,14 @@ function Users() {
         setUsers(usersObjectToArray(data.Users)) }
     )
       .catch((error) => setError(`There was a problem retrieving the list of users. ${error}`));
+  };
+
+  
+  const deleteUser = (email) => 
+  {
+    axios.delete(`${USER_DELETE_ENDPOINT}/${email}`)
+      .then(fetchUsers)
+      .catch((error) => setError(`There was a problem deleting the user. ${error}`));
   };
 
   const showAddUserForm = () => { setAddingUser(true); };
@@ -133,7 +150,7 @@ function Users() {
         setError={setError}
       />
       {error && <ErrorMessage message={error} />}
-      {users.map((user) => <User key={user.name} user={user} />)}
+      {users.map((user) => <User key={user.name} user={user} onDelete={deleteUser} />)}
     </div>
   );
 }
