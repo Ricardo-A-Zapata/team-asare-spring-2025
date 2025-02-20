@@ -8,6 +8,7 @@ import {
 
 import './App.css';
 
+import Home from './Components/Home'
 import Navbar from './Components/Navbar';
 import Users from './Components/Users';
 
@@ -22,7 +23,9 @@ function App() {
       <Navbar />
       <Routes>
         {/* For a different home page, do:
-         <Route index element={<Login />} /> */}
+        <Route index element={<Login />} /> */}
+        {/* Index route for home */}
+        <Route path="/" element={<Home />} />
         <Route path="users" element={<Users />} />
         <Route path="users/:name" element={<UserPage />} />
       </Routes>

@@ -1,0 +1,37 @@
+/* Center content */
+.home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+    text-align: center;
+    background-color: #f9f9f9; /* Light background */
+  }
+  
+  /* Journal title */
+  .journal-title {
+    font-size: 2.8rem;
+    font-weight: bold;
+    color: #2d2d2d;
+    margin-bottom: 10px;
+  }
+  
+  /* Journal description */
+  .journal-description {
+    font-size: 1.2rem;
+    color: #555;
+    max-width: 60%;
+    line-height: 1.6;
+  }
+  
+  /* Error message */
+  .error-message {
+    margin-top: 20px;
+    padding: 10px;
+    color: #b30000;
+    background-color: #ffdede;
+    border: 1px solid #b30000;
+    border-radius: 5px;
+  }
+  
