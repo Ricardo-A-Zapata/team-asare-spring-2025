@@ -13,8 +13,8 @@ import Navbar from './Components/Navbar';
 import Users from './Components/Users';
 
 function UserPage() {
-  const { name } = useParams();
-  return <h1>{name}</h1>
+  const { email } = useParams();
+  return <h1>{email}</h1>
 }
 
 function App() {
@@ -27,7 +27,7 @@ function App() {
         {/* Index route for home */}
         <Route path="/" element={<Home />} />
         <Route path="users" element={<Users />} />
-        <Route path="users/:name" element={<UserPage />} />
+        <Route path="users/:email" element={<UserPage />} />
       </Routes>
     </BrowserRouter>
   );

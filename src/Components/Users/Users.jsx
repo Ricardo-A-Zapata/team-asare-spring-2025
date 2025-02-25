@@ -83,7 +83,7 @@ function User({ user, onDelete }) {
   };
   return (
     <div className="user-container">
-      <Link to={name}>
+      <Link to={email}>
         <h2>{name}</h2>
         <p>
           Email: {email}
