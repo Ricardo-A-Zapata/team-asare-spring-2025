@@ -11,6 +11,7 @@ import './App.css';
 import Home from './Components/Home'
 import Navbar from './Components/Navbar';
 import Users from './Components/Users';
+import Submissions from './Components/Submissions'; 
 
 function UserPage() {
   const { email } = useParams();
@@ -28,6 +29,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="users" element={<Users />} />
         <Route path="users/:email" element={<UserPage />} />
+        <Route path="submissions" element={<Submissions />} />
       </Routes>
     </BrowserRouter>
   );
