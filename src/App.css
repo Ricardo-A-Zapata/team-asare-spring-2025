@@ -278,18 +278,86 @@ nav a:focus {
   background-color: #e0e0e0;
 }
 
+/* Form Container */
+.form-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+
+.form-container h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.5rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.75rem;
+}
+
+/* Form Fields */
+.form-fields {
+  margin-bottom: 1.5rem;
+}
+
+.form-field {
+  margin-bottom: 1rem;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.form-field input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+/* Roles Container */
+.roles-container {
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.roles-container h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #444;
+  font-size: 1.1rem;
+}
+
 /* Role Checkboxes */
 .roles-checkboxes {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
 .role-checkbox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  background-color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
 }
 
 .role-checkbox input[type="checkbox"] {
@@ -299,4 +367,41 @@ nav a:focus {
 .role-checkbox label {
   margin: 0;
   cursor: pointer;
+  font-weight: normal;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.form-actions button {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.form-actions button[type="button"] {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+.form-actions button[type="button"]:hover {
+  background-color: #e5e5e5;
+}
+
+.form-actions button[type="submit"] {
+  background-color: #0066cc;
+  border: 1px solid #0055aa;
+  color: white;
+}
+
+.form-actions button[type="submit"]:hover {
+  background-color: #0055aa;
 }

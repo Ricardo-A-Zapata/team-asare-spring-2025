@@ -65,39 +65,51 @@ function AddUserForm({
 
   if (!visible) return null;
   return (
-    <form>
-      <label htmlFor="name">
-        Name
-      </label>
-      <input required type="text" id="name" value={name} onChange={changeName} />
-      <label htmlFor="email">
-        Email
-      </label>
-      <input required type="text" id="email" onChange={changeEmail} />
-      <label htmlFor="affiliation">
-        Affiliation
-      </label>
-      <input required type="text" id="affiliation" onChange={changeAffiliation} />
+    <div className="form-container">
+      <h3>Add New User</h3>
       
-      <label>Roles</label>
-      <div className="roles-checkboxes">
-        {Object.entries(ROLES).map(([code, displayName]) => (
-          <div key={code} className="role-checkbox">
-            <input
-              type="checkbox"
-              id={`role-${code}`}
-              value={code}
-              checked={selectedRoles.includes(code)}
-              onChange={handleRoleChange}
-            />
-            <label htmlFor={`role-${code}`}>{displayName}</label>
+      <form>
+        <div className="form-fields">
+          <div className="form-field">
+            <label htmlFor="name">Name</label>
+            <input required type="text" id="name" value={name} onChange={changeName} />
           </div>
-        ))}
-      </div>
-      
-      <button type="button" onClick={cancel}>Cancel</button>
-      <button type="submit" onClick={addUser}>Submit</button>
-    </form>
+          
+          <div className="form-field">
+            <label htmlFor="email">Email</label>
+            <input required type="text" id="email" onChange={changeEmail} />
+          </div>
+          
+          <div className="form-field">
+            <label htmlFor="affiliation">Affiliation</label>
+            <input required type="text" id="affiliation" onChange={changeAffiliation} />
+          </div>
+        </div>
+        
+        <div className="roles-container">
+          <h4>Select Roles</h4>
+          <div className="roles-checkboxes">
+            {Object.entries(ROLES).map(([code, displayName]) => (
+              <div key={code} className="role-checkbox">
+                <input
+                  type="checkbox"
+                  id={`role-${code}`}
+                  value={code}
+                  checked={selectedRoles.includes(code)}
+                  onChange={handleRoleChange}
+                />
+                <label htmlFor={`role-${code}`}>{displayName}</label>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="form-actions">
+          <button type="button" onClick={cancel}>Cancel</button>
+          <button type="submit" onClick={addUser}>Submit</button>
+        </div>
+      </form>
+    </div>
   );
 }
 AddUserForm.propTypes = {
@@ -146,34 +158,51 @@ function EditUserForm({
 
   if (!visible) return null;
   return (
-    <form>
+    <div className="form-container">
       <h3>Update User</h3>
-      <label htmlFor="name">Name</label>
-      <input required type="text" id="name" value={name} onChange={changeName} />
-      <label htmlFor="email">Email</label>
-      <input type="text" id="email" value={email} disabled />
-      <label htmlFor="affiliation">Affiliation</label>
-      <input required type="text" id="affiliation" value={affiliation} onChange={changeAffiliation} />
       
-      <label>Roles</label>
-      <div className="roles-checkboxes">
-        {Object.entries(ROLES).map(([code, displayName]) => (
-          <div key={code} className="role-checkbox">
-            <input
-              type="checkbox"
-              id={`edit-role-${code}`}
-              value={code}
-              checked={selectedRoles.includes(code)}
-              onChange={handleRoleChange}
-            />
-            <label htmlFor={`edit-role-${code}`}>{displayName}</label>
+      <form>
+        <div className="form-fields">
+          <div className="form-field">
+            <label htmlFor="name">Name</label>
+            <input required type="text" id="name" value={name} onChange={changeName} />
           </div>
-        ))}
-      </div>
-      
-      <button type="button" onClick={cancel}>Cancel</button>
-      <button type="submit" onClick={updateUser}>Submit</button>
-    </form>
+          
+          <div className="form-field">
+            <label htmlFor="email">Email</label>
+            <input type="text" id="email" value={email} disabled />
+          </div>
+          
+          <div className="form-field">
+            <label htmlFor="affiliation">Affiliation</label>
+            <input required type="text" id="affiliation" value={affiliation} onChange={changeAffiliation} />
+          </div>
+        </div>
+        
+        <div className="roles-container">
+          <h4>Select Roles</h4>
+          <div className="roles-checkboxes">
+            {Object.entries(ROLES).map(([code, displayName]) => (
+              <div key={code} className="role-checkbox">
+                <input
+                  type="checkbox"
+                  id={`edit-role-${code}`}
+                  value={code}
+                  checked={selectedRoles.includes(code)}
+                  onChange={handleRoleChange}
+                />
+                <label htmlFor={`edit-role-${code}`}>{displayName}</label>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div className="form-actions">
+          <button type="button" onClick={cancel}>Cancel</button>
+          <button type="submit" onClick={updateUser}>Submit</button>
+        </div>
+      </form>
+    </div>
   );
 }
 EditUserForm.propTypes = {
