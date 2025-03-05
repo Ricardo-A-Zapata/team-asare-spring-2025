@@ -1,11 +1,11 @@
-const React = require('react');
-const { render, screen, waitFor } = require('@testing-library/react');
-const Home = require('./Home').default;
-const { BACKEND_URL } = require('../../constants');
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import Home from './Home';
+import { BACKEND_URL } from '../../constants';
+import axios from 'axios';
+import '@testing-library/jest-dom';
 
-jest.mock('axios', () => ({
-  get: jest.fn(),
-}));
+jest.mock('axios');
 
 describe('Home Component', () => {
   beforeEach(() => {
@@ -13,7 +13,7 @@ describe('Home Component', () => {
   });
 
   test('fetches and displays the journal name', async () => {
-    require('axios').get.mockResolvedValueOnce({ data: { "Journal Name": "Test Journal" } });
+    axios.get.mockResolvedValueOnce({ data: { "Journal Name": "Test Journal" } });
 
     render(<Home />);
 
@@ -21,7 +21,7 @@ describe('Home Component', () => {
   });
 
   test('displays an error message if fetching fails', async () => {
-    require('axios').get.mockRejectedValueOnce(new Error('API failure'));
+    axios.get.mockRejectedValueOnce(new Error('API failure'));
 
     render(<Home />);
 

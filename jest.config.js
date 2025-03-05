@@ -195,8 +195,7 @@ const config = {
   // watchman: true,
   testEnvironment: "jsdom",
   moduleNameMapper: {
-    '\\.(css|less)$': '<rootDir>/test/jest/__mocks__/styleMocks.js',
-    '\\.(png|less)$': '<rootDir>/test/jest/__mocks__/imgMock.js'
+    "\\.(css|less|scss|sass)$": "<rootDir>/test/jest/__mocks__/styleMock.js"
   },
 
   transform: {

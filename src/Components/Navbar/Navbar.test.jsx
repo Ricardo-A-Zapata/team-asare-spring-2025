@@ -2,6 +2,11 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Navbar from './Navbar';
+import '@testing-library/jest-dom';
+import { UNSAFE_logV6DeprecationWarnings } from 'react-router';
+
+UNSAFE_logV6DeprecationWarnings(false);
+
 
 describe('Navbar Component', () => {
   test('renders without crashing', () => {
