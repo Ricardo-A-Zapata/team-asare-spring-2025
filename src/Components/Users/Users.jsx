@@ -19,17 +19,23 @@ function AddUserForm({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [affiliation, setAffiliation] = useState('');
+  const [roles, setRoles] = useState('');
 
   const changeName = (event) => { setName(event.target.value); };
   const changeEmail = (event) => { setEmail(event.target.value); };
   const changeAffiliation = (event) => { setAffiliation(event.target.value);};
+  const changeRoles = (event) => { setRoles(event.target.value); };
 
   const addUser = (event) => {
     event.preventDefault();
+    const rolesArray = roles.split(',')
+      .map(role => role.trim())
+      .filter(role => role.length > 0);
     const newUser = {
       name: name,
       email: email,
       affiliation: affiliation,
+      roles: rolesArray,
     }
     axios.put(USERS_CREATE_ENDPOINT, newUser)
       .then(fetchUsers)
@@ -51,6 +57,8 @@ function AddUserForm({
         Affiliation
       </label>
       <input required type="text" id="affiliation" onChange={changeAffiliation} />
+      <label htmlFor="roles">Roles (comma separated)</label>
+      <input type="text" id="roles" value={roles} onChange={changeRoles} />
       <button type="button" onClick={cancel}>Cancel</button>
       <button type="submit" onClick={addUser}>Submit</button>
     </form>
