@@ -16,7 +16,7 @@ import Users from './Components/Users';
 import Submissions from './Components/Submissions'; 
 import { BACKEND_URL } from './constants';
 
-const USER_READ_SINGLE_ENDPOINT = `${BACKEND_URL}/user/read_single`;
+const USER_READ_SINGLE_ENDPOINT = `${BACKEND_URL}/user/read`;
 
 function UserPage() {
   const { email } = useParams();
