@@ -143,7 +143,7 @@ ErrorMessage.propTypes = {
 };
 
 function User({ user, onDelete, onEdit }) {
-  const { name, email } = user;
+  const { name, email, affiliation, roles } = user;
   const handleDelete = () => 
   {
     if (window.confirm(`Are you sure you want to delete ${name}?`)) {
@@ -162,6 +162,16 @@ function User({ user, onDelete, onEdit }) {
         <p>
           Email: {email}
         </p>
+        {affiliation && (
+          <p>
+            Affiliation: {affiliation}
+          </p>
+        )}
+        {roles && roles.length > 0 && (
+          <p>
+            Roles: {roles.join(', ')}
+          </p>
+        )}
       </Link>
       <button type="button" onClick={handleDelete}>Delete</button>
       <button type="button" onClick={handleEdit}>Edit</button>
@@ -172,6 +182,8 @@ User.propTypes = {
   user: propTypes.shape({
     name: propTypes.string.isRequired,
     email: propTypes.string.isRequired,
+    affiliation: propTypes.string,
+    roles: propTypes.array
   }).isRequired,
   onDelete: propTypes.func.isRequired,
   onEdit: propTypes.func.isRequired,
