@@ -277,3 +277,26 @@ nav a:focus {
 .error-container a:hover, .not-found a:hover {
   background-color: #e0e0e0;
 }
+
+/* Role Checkboxes */
+.roles-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.role-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.role-checkbox input[type="checkbox"] {
+  margin: 0;
+}
+
+.role-checkbox label {
+  margin: 0;
+  cursor: pointer;
+}

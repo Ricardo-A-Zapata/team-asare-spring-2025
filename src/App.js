@@ -18,6 +18,20 @@ import { BACKEND_URL } from './constants';
 
 const USER_READ_SINGLE_ENDPOINT = `${BACKEND_URL}/user/read`;
 
+// Role constants
+const AUTHOR_CODE = 'AU';
+const EDITOR_CODE = 'ED';
+const REFEREE_CODE = 'RE';
+
+const ROLES = {
+  [AUTHOR_CODE]: 'Author',
+  [EDITOR_CODE]: 'Editor',
+  [REFEREE_CODE]: 'Referee',
+};
+
+// Helper function to convert role codes to display names
+const getRoleDisplayName = (roleCode) => ROLES[roleCode] || roleCode;
+
 function UserPage() {
   const { email } = useParams();
   const [user, setUser] = useState(null);
@@ -93,7 +107,7 @@ function UserPage() {
           {user.roles && user.roles.length > 0 ? (
             <ul className="roles-list">
               {user.roles.map((role, index) => (
-                <li key={index}>{role}</li>
+                <li key={index}>{getRoleDisplayName(role)}</li>
               ))}
             </ul>
           ) : (

@@ -8,7 +8,22 @@ import { BACKEND_URL } from '../../constants';
 const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
 const USERS_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
 const USER_DELETE_ENDPOINT = `${BACKEND_URL}/user/delete`;
-const USER_UPDATE_ENDPOINT = `${BACKEND_URL}/user/update`
+const USER_UPDATE_ENDPOINT = `${BACKEND_URL}/user/update`;
+
+// Role constants
+const AUTHOR_CODE = 'AU';
+const EDITOR_CODE = 'ED';
+const REFEREE_CODE = 'RE';
+
+const ROLES = {
+  [AUTHOR_CODE]: 'Author',
+  [EDITOR_CODE]: 'Editor',
+  [REFEREE_CODE]: 'Referee',
+};
+
+// Helper function to convert role codes to display names
+const getRoleDisplayName = (roleCode) => ROLES[roleCode] || roleCode;
+
 
 function AddUserForm({
   visible,
@@ -19,23 +34,29 @@ function AddUserForm({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [affiliation, setAffiliation] = useState('');
-  const [roles, setRoles] = useState('');
+  const [selectedRoles, setSelectedRoles] = useState([]);
 
   const changeName = (event) => { setName(event.target.value); };
   const changeEmail = (event) => { setEmail(event.target.value); };
   const changeAffiliation = (event) => { setAffiliation(event.target.value);};
-  const changeRoles = (event) => { setRoles(event.target.value); };
+  
+  const handleRoleChange = (event) => {
+    const value = event.target.value;
+    setSelectedRoles(
+      // When a role is already selected, remove it; otherwise, add it
+      selectedRoles.includes(value)
+        ? selectedRoles.filter(role => role !== value)
+        : [...selectedRoles, value]
+    );
+  };
 
   const addUser = (event) => {
     event.preventDefault();
-    const rolesArray = roles.split(',')
-      .map(role => role.trim())
-      .filter(role => role.length > 0);
     const newUser = {
       name: name,
       email: email,
       affiliation: affiliation,
-      roles: rolesArray,
+      roles: selectedRoles,
     }
     axios.put(USERS_CREATE_ENDPOINT, newUser)
       .then(fetchUsers)
@@ -57,8 +78,23 @@ function AddUserForm({
         Affiliation
       </label>
       <input required type="text" id="affiliation" onChange={changeAffiliation} />
-      <label htmlFor="roles">Roles (comma separated)</label>
-      <input type="text" id="roles" value={roles} onChange={changeRoles} />
+      
+      <label>Roles</label>
+      <div className="roles-checkboxes">
+        {Object.entries(ROLES).map(([code, displayName]) => (
+          <div key={code} className="role-checkbox">
+            <input
+              type="checkbox"
+              id={`role-${code}`}
+              value={code}
+              checked={selectedRoles.includes(code)}
+              onChange={handleRoleChange}
+            />
+            <label htmlFor={`role-${code}`}>{displayName}</label>
+          </div>
+        ))}
+      </div>
+      
       <button type="button" onClick={cancel}>Cancel</button>
       <button type="submit" onClick={addUser}>Submit</button>
     </form>
@@ -76,21 +112,29 @@ function EditUserForm({
 }) {
   const [name, setName] = useState(user.name);
   const [affiliation, setAffiliation] = useState(user.affiliation || '');
-  const [roles, setRoles] = useState(user.roles ? user.roles.join(', ') : '');
+  const [selectedRoles, setSelectedRoles] = useState(user.roles || []);
   const email = user.email;
+  
   const changeName = (event) => { setName(event.target.value); };
   const changeAffiliation = (event) => { setAffiliation(event.target.value); };
-  const changeRoles = (event) => { setRoles(event.target.value); };
+  
+  const handleRoleChange = (event) => {
+    const value = event.target.value;
+    setSelectedRoles(
+      // When a role is already selected, remove it; otherwise, add it
+      selectedRoles.includes(value)
+        ? selectedRoles.filter(role => role !== value)
+        : [...selectedRoles, value]
+    );
+  };
+  
   const updateUser = (event) => {
     event.preventDefault();
-    const rolesArray = roles.split(',')
-      .map(role => role.trim())
-      .filter(role => role.length > 0);
     const updatedUser = {
       name,
       email,
       affiliation,
-      roles: rolesArray
+      roles: selectedRoles
     };
     axios.put(USER_UPDATE_ENDPOINT, updatedUser)
       .then(() => {
@@ -110,8 +154,23 @@ function EditUserForm({
       <input type="text" id="email" value={email} disabled />
       <label htmlFor="affiliation">Affiliation</label>
       <input required type="text" id="affiliation" value={affiliation} onChange={changeAffiliation} />
-      <label htmlFor="roles">Roles (comma separated)</label>
-      <input type="text" id="roles" value={roles} onChange={changeRoles} />
+      
+      <label>Roles</label>
+      <div className="roles-checkboxes">
+        {Object.entries(ROLES).map(([code, displayName]) => (
+          <div key={code} className="role-checkbox">
+            <input
+              type="checkbox"
+              id={`edit-role-${code}`}
+              value={code}
+              checked={selectedRoles.includes(code)}
+              onChange={handleRoleChange}
+            />
+            <label htmlFor={`edit-role-${code}`}>{displayName}</label>
+          </div>
+        ))}
+      </div>
+      
       <button type="button" onClick={cancel}>Cancel</button>
       <button type="submit" onClick={updateUser}>Submit</button>
     </form>
@@ -169,7 +228,7 @@ function User({ user, onDelete, onEdit }) {
         )}
         {roles && roles.length > 0 && (
           <p>
-            Roles: {roles.join(', ')}
+            Roles: {roles.map(role => getRoleDisplayName(role)).join(', ')}
           </p>
         )}
       </Link>
