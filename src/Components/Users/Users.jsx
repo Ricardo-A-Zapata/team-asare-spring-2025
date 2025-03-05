@@ -57,6 +57,7 @@ function AddUserForm({
       email: email,
       affiliation: affiliation,
       roles: selectedRoles,
+      roleCodes: selectedRoles
     }
     axios.put(USERS_CREATE_ENDPOINT, newUser)
       .then(fetchUsers)
@@ -124,7 +125,9 @@ function EditUserForm({
 }) {
   const [name, setName] = useState(user.name);
   const [affiliation, setAffiliation] = useState(user.affiliation || '');
-  const [selectedRoles, setSelectedRoles] = useState(user.roles || []);
+  const [selectedRoles, setSelectedRoles] = useState(
+    (user.roleCodes && user.roleCodes.length > 0) ? user.roleCodes : (user.roles || [])
+  );
   const email = user.email;
   
   const changeName = (event) => { setName(event.target.value); };
@@ -146,7 +149,8 @@ function EditUserForm({
       name,
       email,
       affiliation,
-      roles: selectedRoles
+      roles: selectedRoles,
+      roleCodes: selectedRoles
     };
     axios.put(USER_UPDATE_ENDPOINT, updatedUser)
       .then(() => {
@@ -214,7 +218,8 @@ EditUserForm.propTypes = {
     name: propTypes.string.isRequired,
     email: propTypes.string.isRequired,
     affiliation: propTypes.string,
-    roles: propTypes.array
+    roles: propTypes.array,
+    roleCodes: propTypes.array
   }).isRequired,
 };
 
@@ -231,7 +236,7 @@ ErrorMessage.propTypes = {
 };
 
 function User({ user, onDelete, onEdit }) {
-  const { name, email, affiliation, roles } = user;
+  const { name, email, affiliation, roles, roleCodes } = user;
   const handleDelete = () => 
   {
     if (window.confirm(`Are you sure you want to delete ${name}?`)) {
@@ -242,6 +247,9 @@ function User({ user, onDelete, onEdit }) {
   {
     onEdit(user);
   };
+
+  // Determine which roles to display, prioritizing roleCodes if available
+  const displayRoles = roleCodes && roleCodes.length > 0 ? roleCodes : roles;
 
   return (
     <div className="user-container">
@@ -255,9 +263,9 @@ function User({ user, onDelete, onEdit }) {
             Affiliation: {affiliation}
           </p>
         )}
-        {roles && roles.length > 0 && (
+        {displayRoles && displayRoles.length > 0 && (
           <p>
-            Roles: {roles.map(role => getRoleDisplayName(role)).join(', ')}
+            Roles: {displayRoles.map(role => getRoleDisplayName(role)).join(', ')}
           </p>
         )}
       </Link>
@@ -271,7 +279,8 @@ User.propTypes = {
     name: propTypes.string.isRequired,
     email: propTypes.string.isRequired,
     affiliation: propTypes.string,
-    roles: propTypes.array
+    roles: propTypes.array,
+    roleCodes: propTypes.array
   }).isRequired,
   onDelete: propTypes.func.isRequired,
   onEdit: propTypes.func.isRequired,
