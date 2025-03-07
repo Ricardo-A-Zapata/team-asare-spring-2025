@@ -405,3 +405,18 @@ nav a:focus {
 .form-actions button[type="submit"]:hover {
   background-color: #0055aa;
 }
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.2rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  margin: 2rem auto;
+  max-width: 600px;
+}
