@@ -1,3 +1,20 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Users Component matches snapshot 1`] = `<DocumentFragment />`;
+exports[`Users Component matches snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="wrapper"
+  >
+    <header>
+      <h1>
+        View All Users
+      </h1>
+      <button
+        type="button"
+      >
+        Add a User
+      </button>
+    </header>
+  </div>
+</DocumentFragment>
+`;

@@ -14,7 +14,11 @@ const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
 describe('Users Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    axios.get.mockResolvedValue(Promise.resolve({ data: { Users: [] } })); // Default empty response
+    axios.get.mockResolvedValue({ data: { Users: [] } });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   test('fetches and displays a list of users', async () => {
@@ -53,7 +57,9 @@ describe('Users Component', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/There was a problem retrieving the list of users/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/There was a problem retrieving the list of users/i)
+      ).toBeInTheDocument();
     });
   });
 
@@ -74,18 +80,22 @@ describe('Users Component', () => {
 
     await waitFor(() => {
       const userLink = screen.getByRole('link', { name: /John Doe/i });
-      expect(userLink).toHaveAttribute('href', `/john@example.com`); // Ensure correct route
+      expect(userLink).toHaveAttribute('href', `/john@example.com`);
     });
   });
 
   test('matches snapshot', async () => {
+    let asFragment;
+    
     await act(async () => {
-      const { asFragment } = render(
+      const rendered = render(
         <BrowserRouter>
           <Users />
         </BrowserRouter>
       );
-      expect(asFragment()).toMatchSnapshot();
+      asFragment = rendered.asFragment;
     });
+
+    expect(asFragment()).toMatchSnapshot();
   });
 });
