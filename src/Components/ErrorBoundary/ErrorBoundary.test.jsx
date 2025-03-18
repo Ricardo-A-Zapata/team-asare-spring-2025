@@ -29,7 +29,7 @@ describe('ErrorBoundary', () => {
         <GoodChild />
       </ErrorBoundary>
     );
-    
+
     expect(screen.getByText('Good Child')).toBeInTheDocument();
   });
 
@@ -50,9 +50,9 @@ describe('ErrorBoundary', () => {
         <ProblemChild />
       </ErrorBoundary>
     );
-    
+
     expect(container.querySelector('.error-boundary')).toBeInTheDocument();
     expect(screen.getByTestId('custom-fallback')).toBeInTheDocument();
     expect(screen.getByText('Custom Error Message')).toBeInTheDocument();
   });
-}); 
+});

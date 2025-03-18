@@ -4,7 +4,7 @@ import ErrorBoundary from './ErrorBoundary';
 // A component that throws an error when a button is clicked
 const BuggyCounter = () => {
   const [counter, setCounter] = useState(0);
-  
+
   const handleClick = () => {
     setCounter(prevCounter => {
       // Throw an error when counter reaches 5
@@ -46,11 +46,11 @@ const ErrorBoundaryExample = () => {
     <div>
       <h1>Error Boundary Example</h1>
       <p>Click the button to increment the counter. At count 5, it will throw an error.</p>
-      
+
       <ErrorBoundary key={key} fallback={<ErrorFallback resetErrorBoundary={handleReset} />}>
         <BuggyCounter />
       </ErrorBoundary>
-      
+
       <div style={{ marginTop: '20px' }}>
         <h2>Other content</h2>
         <p>This content will still be visible even when the counter crashes.</p>
@@ -59,4 +59,4 @@ const ErrorBoundaryExample = () => {
   );
 };
 
-export default ErrorBoundaryExample; 
+export default ErrorBoundaryExample;
