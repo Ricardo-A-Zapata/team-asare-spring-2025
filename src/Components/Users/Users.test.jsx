@@ -4,12 +4,16 @@ import { BrowserRouter } from 'react-router-dom';
 import Users from './Users';
 import axios from 'axios';
 import '@testing-library/jest-dom';
+import userEvent from '@testing-library/user-event';
 
 jest.mock('axios');
 
 import { BACKEND_URL } from '../../constants';
 
 const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
+const USER_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
+const USER_UPDATE_ENDPOINT = `${BACKEND_URL}/user/update`;
+const USER_DELETE_ENDPOINT = `${BACKEND_URL}/user/delete`;
 
 describe('Users Component', () => {
   beforeEach(() => {
@@ -97,5 +101,22 @@ describe('Users Component', () => {
     });
 
     expect(asFragment()).toMatchSnapshot();
+  });
+
+  test('opens AddUserForm when clicking "Add a User" button', async () => {
+    axios.get.mockResolvedValueOnce({ data: { Users: [] } });
+    
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Users />
+        </BrowserRouter>
+      );
+    });
+
+    expect(screen.queryByText(/Add New User/i)).not.toBeInTheDocument();
+    const addUserButton = screen.getByRole('button', { name: /Add a User/i });
+    await userEvent.click(addUserButton);
+    expect(screen.getByText(/Add New User/i)).toBeInTheDocument();
   });
 });
