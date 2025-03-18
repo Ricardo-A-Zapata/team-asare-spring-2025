@@ -119,4 +119,26 @@ describe('Users Component', () => {
     await userEvent.click(addUserButton);
     expect(screen.getByText(/Add New User/i)).toBeInTheDocument();
   });
+
+  test('opens EditUserForm when clicking "Edit" button', async () => {
+    const mockUsers = {
+      Users: [
+        { id: 'test@gmail.com', name: 'test', email: 'test@gmail.com', affiliation: 'nyu' }
+      ]
+    };
+    axios.get.mockResolvedValueOnce({ data: mockUsers });
+    
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <Users />
+        </BrowserRouter>
+      );
+    });
+    const editButton = screen.getByRole('button', { name: /Edit/i });
+    await userEvent.click(editButton);
+    expect(screen.getByText((content, element) =>
+        content.includes("Update") && content.includes("User"))
+    ).toBeInTheDocument();
+  });
 });
