@@ -36,6 +36,14 @@ function AddUserForm({
   const [email, setEmail] = useState('');
   const [affiliation, setAffiliation] = useState('');
   const [selectedRoles, setSelectedRoles] = useState([]);
+  const nameInputRef = React.useRef(null);
+
+  // Focus the name input when the form becomes visible
+  React.useEffect(() => {
+    if (visible && nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, [visible]);
 
   const changeName = (event) => { setName(event.target.value); };
   const changeEmail = (event) => { setEmail(event.target.value); };
@@ -74,7 +82,14 @@ function AddUserForm({
         <div className="form-fields">
           <div className="form-field">
             <label htmlFor="name">Name</label>
-            <input required type="text" id="name" value={name} onChange={changeName} />
+            <input 
+              required 
+              type="text" 
+              id="name" 
+              value={name} 
+              onChange={changeName}
+              ref={nameInputRef}
+            />
           </div>
           
           <div className="form-field">
@@ -130,6 +145,14 @@ function EditUserForm({
     (user.roleCodes && user.roleCodes.length > 0) ? user.roleCodes : (user.roles || [])
   );
   const email = user.email;
+  const nameInputRef = React.useRef(null);
+  
+  // Focus the name input when the form becomes visible
+  React.useEffect(() => {
+    if (visible && nameInputRef.current) {
+      nameInputRef.current.focus();
+    }
+  }, [visible]);
   
   const changeName = (event) => { setName(event.target.value); };
   const changeAffiliation = (event) => { setAffiliation(event.target.value); };
@@ -170,7 +193,14 @@ function EditUserForm({
         <div className="form-fields">
           <div className="form-field">
             <label htmlFor="name">Name</label>
-            <input required type="text" id="name" value={name} onChange={changeName} />
+            <input 
+              required 
+              type="text" 
+              id="name" 
+              value={name} 
+              onChange={changeName}
+              ref={nameInputRef}  
+            />
           </div>
           
           <div className="form-field">
@@ -204,7 +234,7 @@ function EditUserForm({
         
         <div className="form-actions">
           <button type="button" onClick={cancel}>Cancel</button>
-          <button type="submit" onClick={updateUser}>Submit</button>
+          <button type="submit" onClick={updateUser}>Update</button>
         </div>
       </form>
     </div>
@@ -315,10 +345,19 @@ function Users() {
       .catch((error) => setError(`There was a problem deleting the user. ${error}`));
   };
 
-  const showAddUserForm = () => { setAddingUser(true); };
-  const hideAddUserForm = () => { setAddingUser(false); };
+  // When adding a user, close any edit forms that might be open
+  const showAddUserForm = () => { 
+    setEditingUser(null); // Close edit form if open
+    setAddingUser(true);
+  };
+  
+  const hideAddUserForm = () => { 
+    setAddingUser(false);
+  };
 
+  // When editing a user, close the add form if it's open
   const editUser = (user) => {
+    setAddingUser(false); // Close add form if open
     setEditingUser(user);
   };
 
