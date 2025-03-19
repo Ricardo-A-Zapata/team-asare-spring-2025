@@ -52,13 +52,20 @@ button:hover {
   border-radius: 5px;
 }
 
+/* 
+ * General form styles - commented out to prevent conflicts with component-specific styles
+ * These styles are now implemented in component-specific CSS files
+ */
+/*
 form input {
   display: block;
-  margin: .5rem 0 1rem 0;
-  padding: 1rem 0.5rem 0.5rem 0.5rem;
+  margin: .25rem 0 .5rem 0;
+  padding: 0.5rem;
   border-radius: 5px;
   border: 2px solid var(--accent-color);
-  font-size: 1rem;
+  font-size: 0.9rem;
+  width: 100%;
+  max-width: 400px;
 }
 
 form label {
@@ -82,6 +89,7 @@ form label::after {
   background-color: white;
   z-index: -1;
 }
+*/
 
 form button {
   margin-right: 1rem;
@@ -286,6 +294,8 @@ nav a:focus {
   padding: 1.5rem;
   margin-bottom: 2rem;
   max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .form-container h3 {
@@ -318,7 +328,9 @@ nav a:focus {
   padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  height: 36px;
+  max-width: 100%;
 }
 
 .form-field input:focus {

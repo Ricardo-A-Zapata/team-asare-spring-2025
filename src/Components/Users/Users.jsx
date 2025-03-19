@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 import { BACKEND_URL } from '../../constants';
+import './Users.css';
 
 const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
 const USERS_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
@@ -69,7 +70,7 @@ function AddUserForm({
     <div className="form-container">
       <h3>Add New User</h3>
       
-      <form>
+      <form className="user-form">
         <div className="form-fields">
           <div className="form-field">
             <label htmlFor="name">Name</label>
@@ -78,7 +79,7 @@ function AddUserForm({
           
           <div className="form-field">
             <label htmlFor="email">Email</label>
-            <input required type="text" id="email" onChange={changeEmail} />
+            <input required type="email" id="email" onChange={changeEmail} />
           </div>
           
           <div className="form-field">
@@ -165,7 +166,7 @@ function EditUserForm({
     <div className="form-container">
       <h3>Update User</h3>
       
-      <form>
+      <form className="user-form">
         <div className="form-fields">
           <div className="form-field">
             <label htmlFor="name">Name</label>
@@ -174,7 +175,7 @@ function EditUserForm({
           
           <div className="form-field">
             <label htmlFor="email">Email</label>
-            <input type="text" id="email" value={email} disabled />
+            <input type="email" id="email" value={email} disabled />
           </div>
           
           <div className="form-field">
