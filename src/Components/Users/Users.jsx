@@ -61,7 +61,7 @@ function AddUserForm({
     }
     axios.put(USERS_CREATE_ENDPOINT, newUser)
       .then(fetchUsers)
-      .catch((error) => { setError(`There was a problem adding the user. ${error}`); });
+      .catch((error) => { setError(`${error.response.data.message}`); });
   };
 
   if (!visible) return null;
