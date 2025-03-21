@@ -69,7 +69,11 @@ function AddUserForm({
       roleCodes: selectedRoles
     }
     axios.put(USERS_CREATE_ENDPOINT, newUser)
-      .then(fetchUsers)
+      .then(() => {
+        fetchUsers();
+        cancel();
+      }
+      )
       .catch((error) => { setError(`${error.response.data.message}`); });
   };
 
