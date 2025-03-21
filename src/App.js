@@ -104,9 +104,9 @@ function UserPage() {
         
         <div className="user-detail-section">
           <h2>Roles</h2>
-          {user.roles && user.roles.length > 0 ? (
+          {user.roleCodes && user.roleCodes.length > 0 ? (
             <ul className="roles-list">
-              {user.roles.map((role, index) => (
+              {user.roleCodes.map((role, index) => (
                 <li key={index}>{getRoleDisplayName(role)}</li>
               ))}
             </ul>
