@@ -185,7 +185,7 @@ function EditUserForm({
         fetchUsers();
         cancel();
       })
-      .catch((error) => { setError(`error updating the user. ${error}`); });
+      .catch((error) => { setError(`error updating the user. ${error.response.data.message}`); });
   };
 
   if (!visible) return null;
