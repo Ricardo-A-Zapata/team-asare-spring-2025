@@ -357,6 +357,7 @@ function Users() {
   
   const hideAddUserForm = () => { 
     setAddingUser(false);
+    setError('')
   };
 
   // When editing a user, close the add form if it's open
@@ -367,6 +368,7 @@ function Users() {
 
   const hideEditUserForm = () => {
     setEditingUser(null);
+    setError('')
   };
 
   useEffect(fetchUsers, []);
