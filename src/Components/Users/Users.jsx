@@ -25,6 +25,174 @@ const ROLES = {
 // Helper function to convert role codes to display names
 const getRoleDisplayName = (roleCode) => ROLES[roleCode] || roleCode;
 
+// New function for filtering users
+const filterUsers = (users, filters) => {
+  const { searchTerm, selectedRole } = filters;
+  
+  return users.filter(user => {
+    // If no filters are applied, return all users
+    if (!searchTerm && !selectedRole) return true;
+    
+    // Search term filter - check if name or email contains the search term
+    const matchesSearchTerm = !searchTerm || 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Role filter - check if user has the selected role
+    const matchesRole = !selectedRole || 
+      (user.roleCodes && user.roleCodes.includes(selectedRole));
+    
+    // Return user only if they match all applied filters
+    return matchesSearchTerm && matchesRole;
+  });
+};
+
+// New function for sorting users
+const sortUsers = (users, sortConfig) => {
+  if (!sortConfig || !sortConfig.key) return users;
+  
+  return [...users].sort((a, b) => {
+    // Handle sorting by primary role
+    if (sortConfig.key === 'role') {
+      const aRoles = a.roleCodes && a.roleCodes.length > 0 ? a.roleCodes : (a.roles || []);
+      const bRoles = b.roleCodes && b.roleCodes.length > 0 ? b.roleCodes : (b.roles || []);
+      
+      // Get display names of first roles (or empty string if no roles)
+      const aRole = aRoles.length > 0 ? getRoleDisplayName(aRoles[0]) : '';
+      const bRole = bRoles.length > 0 ? getRoleDisplayName(bRoles[0]) : '';
+      
+      return sortConfig.direction === 'asc' 
+        ? aRole.localeCompare(bRole)
+        : bRole.localeCompare(aRole);
+    }
+    
+    // Handle sorting by affiliation (which might be undefined)
+    if (sortConfig.key === 'affiliation') {
+      const aAffiliation = a.affiliation || '';
+      const bAffiliation = b.affiliation || '';
+      
+      return sortConfig.direction === 'asc'
+        ? aAffiliation.localeCompare(bAffiliation)
+        : bAffiliation.localeCompare(aAffiliation);
+    }
+    
+    // Handle default case (name and email)
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
+    
+    return sortConfig.direction === 'asc'
+      ? aValue.localeCompare(bValue)
+      : bValue.localeCompare(aValue);
+  });
+};
+
+// New component for search/filter controls
+function UserFilters({ filters, setFilters }) {
+  const handleSearchChange = (e) => {
+    setFilters({ ...filters, searchTerm: e.target.value });
+  };
+  
+  const handleRoleFilterChange = (e) => {
+    setFilters({ ...filters, selectedRole: e.target.value });
+  };
+  
+  const clearFilters = () => {
+    setFilters({ searchTerm: '', selectedRole: '' });
+  };
+  
+  return (
+    <div className="user-filters">
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search by name or email"
+          value={filters.searchTerm}
+          onChange={handleSearchChange}
+        />
+      </div>
+      
+      <div className="role-filter">
+        <select 
+          value={filters.selectedRole} 
+          onChange={handleRoleFilterChange}
+          aria-label="Filter by role"
+        >
+          <option value="">All Roles</option>
+          {Object.entries(ROLES).map(([code, name]) => (
+            <option key={code} value={code}>{name}</option>
+          ))}
+        </select>
+      </div>
+      
+      {(filters.searchTerm || filters.selectedRole) && (
+        <button 
+          type="button" 
+          className="clear-filters" 
+          onClick={clearFilters}
+        >
+          Clear Filters
+        </button>
+      )}
+    </div>
+  );
+}
+
+UserFilters.propTypes = {
+  filters: propTypes.shape({
+    searchTerm: propTypes.string,
+    selectedRole: propTypes.string
+  }).isRequired,
+  setFilters: propTypes.func.isRequired
+};
+
+// New component for sorting controls
+function UserSorting({ sortConfig, setSortConfig }) {
+  const handleSortChange = (e) => {
+    const value = e.target.value;
+    
+    if (value === "") {
+      // No sorting selected
+      setSortConfig(null);
+    } else {
+      // Split the value into key and direction
+      const [key, direction] = value.split('-');
+      setSortConfig({ key, direction });
+    }
+  };
+  
+  // Create the current value string from sortConfig
+  const currentValue = sortConfig 
+    ? `${sortConfig.key}-${sortConfig.direction}` 
+    : "";
+  
+  return (
+    <div className="user-sorting">
+      <select 
+        value={currentValue}
+        onChange={handleSortChange}
+        aria-label="Sort users"
+      >
+        <option value="">Default Order</option>
+        <option value="name-asc">Name (A-Z)</option>
+        <option value="name-desc">Name (Z-A)</option>
+        <option value="email-asc">Email (A-Z)</option>
+        <option value="email-desc">Email (Z-A)</option>
+        <option value="affiliation-asc">Affiliation (A-Z)</option>
+        <option value="affiliation-desc">Affiliation (Z-A)</option>
+        <option value="role-asc">Role (A-Z)</option>
+        <option value="role-desc">Role (Z-A)</option>
+      </select>
+    </div>
+  );
+}
+
+UserSorting.propTypes = {
+  sortConfig: propTypes.shape({
+    key: propTypes.string.isRequired,
+    direction: propTypes.string.isRequired
+  }),
+  setSortConfig: propTypes.func.isRequired
+};
 
 function AddUserForm({
   visible,
@@ -332,6 +500,8 @@ function Users() {
   const [users, setUsers] = useState([]);
   const [addingUser, setAddingUser] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [filters, setFilters] = useState({ searchTerm: '', selectedRole: '' });
+  const [sortConfig, setSortConfig] = useState(null);
 
   const fetchUsers = () => {
     axios.get(USERS_READ_ENDPOINT)
@@ -373,6 +543,12 @@ function Users() {
 
   useEffect(fetchUsers, []);
 
+  // Filter users based on current filters
+  const filteredUsers = filterUsers(users, filters);
+  
+  // Sort the filtered users based on current sort configuration
+  const sortedUsers = sortConfig ? sortUsers(filteredUsers, sortConfig) : filteredUsers;
+
   return (
     <div className="wrapper">
       <header>
@@ -383,6 +559,21 @@ function Users() {
           Add a User
         </button>
       </header>
+      
+      <div className="user-controls">
+        <UserFilters filters={filters} setFilters={setFilters} />
+        
+        {filteredUsers.length > 0 && (
+          <UserSorting sortConfig={sortConfig} setSortConfig={setSortConfig} />
+        )}
+      </div>
+      
+      <div className="user-count">
+        {filteredUsers.length === users.length 
+          ? `Showing all ${users.length} users` 
+          : `Showing ${filteredUsers.length} of ${users.length} users`}
+      </div>
+      
       <AddUserForm
         visible={addingUser}
         cancel={hideAddUserForm}
@@ -399,9 +590,16 @@ function Users() {
         />
       )}
       {error && <ErrorMessage message={error} />}
-      {users.map((user) => <User key={user.name} user={user} onDelete={deleteUser} onEdit={editUser} />)}
+      {sortedUsers.length > 0 ? (
+        sortedUsers.map((user) => (
+          <User key={user.name} user={user} onDelete={deleteUser} onEdit={editUser} />
+        ))
+      ) : (
+        <p className="no-results">No users match your filters. Try adjusting your search criteria.</p>
+      )}
     </div>
   );
 }
 
 export default Users;
+export { filterUsers, sortUsers };
