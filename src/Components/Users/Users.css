@@ -189,4 +189,125 @@
 
 .form-actions button[type="submit"]:hover {
   background-color: #0055aa;
-} 
+}
+
+/* New styles for user filtering and search functionality */
+.user-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.user-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.search-bar {
+  flex: 1;
+  min-width: 250px;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.search-bar input:focus {
+  outline: none;
+  border-color: #7f56da;
+  box-shadow: 0 0 0 2px rgba(127, 86, 218, 0.2);
+}
+
+.role-filter select {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+  min-width: 150px;
+}
+
+.role-filter select:focus {
+  outline: none;
+  border-color: #7f56da;
+  box-shadow: 0 0 0 2px rgba(127, 86, 218, 0.2);
+}
+
+/* Styles for the new sorting component */
+.user-sorting {
+  min-width: 180px;
+}
+
+.user-sorting select {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: white;
+  width: 100%;
+  cursor: pointer;
+}
+
+.user-sorting select:focus {
+  outline: none;
+  border-color: #7f56da;
+  box-shadow: 0 0 0 2px rgba(127, 86, 218, 0.2);
+}
+
+.clear-filters {
+  background-color: #f8f8f8;
+  color: #666;
+  border: 1px solid #ddd;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.clear-filters:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.user-count {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.no-results {
+  text-align: center;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  color: #666;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .user-controls {
+    flex-direction: column;
+  }
+  
+  .user-filters {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  
+  .search-bar, .role-filter, .user-sorting {
+    width: 100%;
+  }
+}
