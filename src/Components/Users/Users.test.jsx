@@ -377,3 +377,143 @@ describe('Users Component', () => {
     expect(userElementsUnsorted.length).toBe(3); // All users should be visible
   });
 });
+
+describe('Loading States', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('shows loading state while fetching users', async () => {
+    // Mock a delayed response
+    axios.get.mockImplementation(() => new Promise(resolve => {
+      setTimeout(() => {
+        resolve({ data: { Users: testUsers } });
+      }, 100);
+    }));
+
+    renderWithRouter(<Users />);
+    
+    // Check that loading message is shown
+    expect(screen.getByText('Loading users...')).toBeInTheDocument();
+    
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.queryByText('Loading users...')).not.toBeInTheDocument();
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+  });
+
+  it('shows loading state while adding a user', async () => {
+    axios.get.mockResolvedValue({ data: { Users: testUsers } });
+    axios.put.mockImplementation(() => new Promise(resolve => {
+      setTimeout(() => {
+        resolve({});
+      }, 100);
+    }));
+
+    renderWithRouter(<Users />);
+    
+    // Wait for initial load to complete
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+    
+    // Click add user button
+    fireEvent.click(screen.getByText('Add a User'));
+    
+    // Fill in the form
+    const nameInput = screen.getByLabelText('Name');
+    const emailInput = screen.getByLabelText('Email');
+    const affiliationInput = screen.getByLabelText('Affiliation');
+    
+    fireEvent.change(nameInput, { target: { value: 'New User' } });
+    fireEvent.change(emailInput, { target: { value: 'new@example.com' } });
+    fireEvent.change(affiliationInput, { target: { value: 'New Org' } });
+    
+    // Submit the form
+    fireEvent.click(screen.getByText('Submit'));
+    
+    // Check that loading message is shown
+    expect(screen.getByText('Processing your request...')).toBeInTheDocument();
+    
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.queryByText('Processing your request...')).not.toBeInTheDocument();
+    });
+  });
+
+  it('shows loading state while deleting a user', async () => {
+    axios.get.mockResolvedValue({ data: { Users: testUsers } });
+    axios.delete.mockImplementation(() => new Promise(resolve => {
+      setTimeout(() => {
+        resolve({});
+      }, 100);
+    }));
+
+    renderWithRouter(<Users />);
+    
+    // Wait for initial load to complete
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+    
+    // Click delete button
+    const deleteButtons = screen.getAllByText('Delete');
+    fireEvent.click(deleteButtons[0]);
+    
+    // Check that loading message is shown
+    expect(screen.getByText('Processing your request...')).toBeInTheDocument();
+    
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.queryByText('Processing your request...')).not.toBeInTheDocument();
+    });
+  });
+
+  it('disables buttons during loading states', async () => {
+    axios.get.mockResolvedValue({ data: { Users: testUsers } });
+    axios.delete.mockImplementation(() => new Promise(resolve => {
+      setTimeout(() => {
+        resolve({});
+      }, 100);
+    }));
+
+    renderWithRouter(<Users />);
+    
+    // Wait for initial load to complete
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
+    });
+    
+    // Click delete button
+    const deleteButtons = screen.getAllByText('Delete');
+    fireEvent.click(deleteButtons[0]);
+    
+    // Check that all buttons are disabled during loading
+    expect(screen.getByText('Add a User')).toBeDisabled();
+    expect(screen.getAllByText('Delete')[0]).toBeDisabled();
+    expect(screen.getAllByText('Edit')[0]).toBeDisabled();
+    
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.getByText('Add a User')).not.toBeDisabled();
+      expect(screen.getAllByText('Delete')[0]).not.toBeDisabled();
+      expect(screen.getAllByText('Edit')[0]).not.toBeDisabled();
+    });
+  });
+
+  it('handles error state while loading', async () => {
+    axios.get.mockRejectedValue(new Error('Failed to fetch users'));
+
+    renderWithRouter(<Users />);
+    
+    // Check that loading message is shown initially
+    expect(screen.getByText('Loading users...')).toBeInTheDocument();
+    
+    // Wait for error to be shown
+    await waitFor(() => {
+      expect(screen.queryByText('Loading users...')).not.toBeInTheDocument();
+      expect(screen.getByText(/Failed to fetch users/)).toBeInTheDocument();
+    });
+  });
+});
