@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 import { BACKEND_URL } from '../../constants';
+import Loading from '../Loading/Loading';
 import './Users.css';
 
 const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
@@ -199,6 +200,7 @@ function AddUserForm({
   cancel,
   fetchUsers,
   setError,
+  setIsOperationLoading
 }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -227,7 +229,7 @@ function AddUserForm({
     );
   };
 
-  const addUser = (event) => {
+  const addUser = async (event) => {
     event.preventDefault();
     const newUser = {
       name: name,
@@ -235,14 +237,18 @@ function AddUserForm({
       affiliation: affiliation,
       roles: selectedRoles,
       roleCodes: selectedRoles
+    };
+    
+    try {
+      setIsOperationLoading(true);
+      await axios.put(USERS_CREATE_ENDPOINT, newUser);
+      await fetchUsers();
+      cancel();
+    } catch (error) {
+      setError(`${error.response.data.message}`);
+    } finally {
+      setIsOperationLoading(false);
     }
-    axios.put(USERS_CREATE_ENDPOINT, newUser)
-      .then(() => {
-        fetchUsers();
-        cancel();
-      }
-      )
-      .catch((error) => { setError(`${error.response.data.message}`); });
   };
 
   if (!visible) return null;
@@ -306,10 +312,11 @@ AddUserForm.propTypes = {
   cancel: propTypes.func.isRequired,
   fetchUsers: propTypes.func.isRequired,
   setError: propTypes.func.isRequired,
+  setIsOperationLoading: propTypes.func.isRequired
 };
 
 function EditUserForm({ 
-  visible, cancel, fetchUsers, setError, user 
+  visible, cancel, fetchUsers, setError, user, setIsOperationLoading
 }) {
   const [name, setName] = useState(user.name);
   const [affiliation, setAffiliation] = useState(user.affiliation || '');
@@ -339,7 +346,7 @@ function EditUserForm({
     );
   };
   
-  const updateUser = (event) => {
+  const updateUser = async (event) => {
     event.preventDefault();
     const updatedUser = {
       name,
@@ -348,12 +355,17 @@ function EditUserForm({
       roles: selectedRoles,
       roleCodes: selectedRoles
     };
-    axios.put(USER_UPDATE_ENDPOINT, updatedUser)
-      .then(() => {
-        fetchUsers();
-        cancel();
-      })
-      .catch((error) => { setError(`error updating the user. ${error.response.data.message}`); });
+    
+    try {
+      setIsOperationLoading(true);
+      await axios.put(USER_UPDATE_ENDPOINT, updatedUser);
+      await fetchUsers();
+      cancel();
+    } catch (error) {
+      setError(`error updating the user. ${error.response.data.message}`);
+    } finally {
+      setIsOperationLoading(false);
+    }
   };
 
   if (!visible) return null;
@@ -424,6 +436,7 @@ EditUserForm.propTypes = {
     roles: propTypes.array,
     roleCodes: propTypes.array
   }).isRequired,
+  setIsOperationLoading: propTypes.func.isRequired
 };
 
 
@@ -438,7 +451,7 @@ ErrorMessage.propTypes = {
   message: propTypes.string.isRequired,
 };
 
-function User({ user, onDelete, onEdit }) {
+function User({ user, onDelete, onEdit, isOperationLoading }) {
   const { name, email, affiliation, roles, roleCodes } = user;
   const handleDelete = () => 
   {
@@ -472,8 +485,20 @@ function User({ user, onDelete, onEdit }) {
           </p>
         )}
       </Link>
-      <button type="button" onClick={handleDelete}>Delete</button>
-      <button type="button" onClick={handleEdit}>Edit</button>
+      <button 
+        type="button" 
+        onClick={handleDelete}
+        disabled={isOperationLoading}
+      >
+        Delete
+      </button>
+      <button 
+        type="button" 
+        onClick={handleEdit}
+        disabled={isOperationLoading}
+      >
+        Edit
+      </button>
     </div>
   );
 }
@@ -487,6 +512,7 @@ User.propTypes = {
   }).isRequired,
   onDelete: propTypes.func.isRequired,
   onEdit: propTypes.func.isRequired,
+  isOperationLoading: propTypes.bool.isRequired
 };
 
 function usersObjectToArray(Data) {
@@ -502,46 +528,90 @@ function Users() {
   const [editingUser, setEditingUser] = useState(null);
   const [filters, setFilters] = useState({ searchTerm: '', selectedRole: '' });
   const [sortConfig, setSortConfig] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isOperationLoading, setIsOperationLoading] = useState(false);
 
-  const fetchUsers = () => {
-    axios.get(USERS_READ_ENDPOINT)
-      .then(({ data }) => {
-        setUsers(usersObjectToArray(data.Users)) }
-    )
-      .catch((error) => setError(`There was a problem retrieving the list of users. ${error}`));
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      const { data } = await axios.get(USERS_READ_ENDPOINT);
+      setUsers(usersObjectToArray(data.Users));
+    } catch (error) {
+      setError(`There was a problem retrieving the list of users. ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  
-  const deleteUser = (email) => 
-  {
-    axios.delete(`${USER_DELETE_ENDPOINT}/${email}`)
-      .then(fetchUsers)
-      .catch((error) => setError(`There was a problem deleting the user. ${error}`));
+  const deleteUser = async (email) => {
+    if (!email) return;
+    
+    try {
+      setIsOperationLoading(true);
+      setError('');
+      await axios.delete(`${USER_DELETE_ENDPOINT}/${email}`);
+      await fetchUsers();
+    } catch (error) {
+      setError(`There was a problem deleting the user. ${error}`);
+    } finally {
+      setIsOperationLoading(false);
+    }
   };
 
   // When adding a user, close any edit forms that might be open
   const showAddUserForm = () => { 
     setEditingUser(null); // Close edit form if open
     setAddingUser(true);
+    setError('');
   };
   
   const hideAddUserForm = () => { 
     setAddingUser(false);
-    setError('')
+    setError('');
   };
 
   // When editing a user, close the add form if it's open
   const editUser = (user) => {
+    if (!user) return;
     setAddingUser(false); // Close add form if open
     setEditingUser(user);
+    setError('');
   };
 
   const hideEditUserForm = () => {
     setEditingUser(null);
-    setError('')
+    setError('');
   };
 
-  useEffect(fetchUsers, []);
+  useEffect(() => {
+    let mounted = true;
+
+    const loadUsers = async () => {
+      try {
+        setIsLoading(true);
+        setError('');
+        const { data } = await axios.get(USERS_READ_ENDPOINT);
+        if (mounted) {
+          setUsers(usersObjectToArray(data.Users));
+        }
+      } catch (error) {
+        if (mounted) {
+          setError(`There was a problem retrieving the list of users. ${error}`);
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadUsers();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Filter users based on current filters
   const filteredUsers = filterUsers(users, filters);
@@ -551,51 +621,72 @@ function Users() {
 
   return (
     <div className="wrapper">
-      <header>
-        <h1>
-          View All Users
-        </h1>
-        <button type="button" onClick={showAddUserForm}>
-          Add a User
-        </button>
-      </header>
-      
-      <div className="user-controls">
-        <UserFilters filters={filters} setFilters={setFilters} />
-        
-        {filteredUsers.length > 0 && (
-          <UserSorting sortConfig={sortConfig} setSortConfig={setSortConfig} />
-        )}
-      </div>
-      
-      <div className="user-count">
-        {filteredUsers.length === users.length 
-          ? `Showing all ${users.length} users` 
-          : `Showing ${filteredUsers.length} of ${users.length} users`}
-      </div>
-      
-      <AddUserForm
-        visible={addingUser}
-        cancel={hideAddUserForm}
-        fetchUsers={fetchUsers}
-        setError={setError}
-      />
-      {editingUser && (
-        <EditUserForm
-          visible={true}
-          cancel={hideEditUserForm}
-          fetchUsers={fetchUsers}
-          setError={setError}
-          user={editingUser}
-        />
-      )}
-      {error && <ErrorMessage message={error} />}
-      {sortedUsers.length > 0 ? (
-        sortedUsers.map((user) => (
-          <User key={user.name} user={user} onDelete={deleteUser} onEdit={editUser} />
-        ))
+      {isLoading ? (
+        <Loading message="Loading users..." />
       ) : (
-        <p className="no-results">No users match your filters. Try adjusting your search criteria.</p>
+        <>
+          <header>
+            <h1>View All Users</h1>
+            <button 
+              type="button" 
+              onClick={showAddUserForm}
+              disabled={isOperationLoading}
+            >
+              Add a User
+            </button>
+          </header>
+          
+          <div className="user-controls">
+            <UserFilters filters={filters} setFilters={setFilters} />
+            
+            {filteredUsers.length > 0 && (
+              <UserSorting sortConfig={sortConfig} setSortConfig={setSortConfig} />
+            )}
+          </div>
+          
+          <div className="user-count">
+            {filteredUsers.length === users.length 
+              ? `Showing all ${users.length} users` 
+              : `Showing ${filteredUsers.length} of ${users.length} users`}
+          </div>
+          
+          <AddUserForm
+            visible={addingUser}
+            cancel={hideAddUserForm}
+            fetchUsers={fetchUsers}
+            setError={setError}
+            setIsOperationLoading={setIsOperationLoading}
+          />
+          
+          {editingUser && (
+            <EditUserForm
+              visible={true}
+              cancel={hideEditUserForm}
+              fetchUsers={fetchUsers}
+              setError={setError}
+              user={editingUser}
+              setIsOperationLoading={setIsOperationLoading}
+            />
+          )}
+          
+          {error && <ErrorMessage message={error} />}
+          
+          {isOperationLoading ? (
+            <Loading message="Processing your request..." />
+          ) : sortedUsers.length > 0 ? (
+            sortedUsers.map((user) => (
+              <User 
+                key={user.email} // Changed from name to email as it's more unique
+                user={user} 
+                onDelete={deleteUser} 
+                onEdit={editUser}
+                isOperationLoading={isOperationLoading}
+              />
+            ))
+          ) : (
+            <p className="no-results">No users match your filters. Try adjusting your search criteria.</p>
+          )}
+        </>
       )}
     </div>
   );
