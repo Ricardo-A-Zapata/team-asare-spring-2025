@@ -49,8 +49,8 @@ const sortUsers = (users, sortConfig) => {
       const bRoles = b.roleCodes && b.roleCodes.length > 0 ? b.roleCodes : (b.roles || []);
       
       // Get display names of first roles (or empty string if no roles)
-      const aRole = aRoles.length > 0 ? getRoleDisplayName(aRoles[0], sortConfig.roles) : '';
-      const bRole = bRoles.length > 0 ? getRoleDisplayName(bRoles[0], sortConfig.roles) : '';
+      const aRole = aRoles.length > 0 ? getRoleDisplayName(aRoles[0], sortConfig.roles || {}) : '';
+      const bRole = bRoles.length > 0 ? getRoleDisplayName(bRoles[0], sortConfig.roles || {}) : '';      
       
       return sortConfig.direction === 'asc' 
         ? aRole.localeCompare(bRole)
@@ -109,7 +109,7 @@ function UserFilters({ filters, setFilters, roles }) {
           aria-label="Filter by role"
         >
           <option value="">All Roles</option>
-          {Object.entries(roles).map(([code, name]) => (
+          {Object.entries(roles || {}).map(([code, name]) => (
             <option key={code} value={code}>{name}</option>
           ))}
         </select>
@@ -531,7 +531,7 @@ function Users() {
   const fetchRoles = async () => {
     try {
       const { data } = await axios.get(ROLES_READ_ENDPOINT);
-      setRoles(data.roles);
+      setRoles(data.roles || {});
     } catch (error) {
       setError(`There was a problem retrieving the roles. ${error}`);
     }

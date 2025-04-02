@@ -54,7 +54,7 @@ exports[`Users Component matches snapshot 1`] = `
             <option
               value="RE"
             >
-              Referee
+              Reviewer
             </option>
           </select>
         </div>
@@ -134,7 +134,7 @@ exports[`Users Component matches snapshot 1`] = `
           Affiliation: University A
         </p>
         <p>
-          Roles: Author, Referee
+          Roles: Author, Reviewer
         </p>
       </a>
       <button
