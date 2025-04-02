@@ -11,20 +11,10 @@ const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
 const USERS_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
 const USER_DELETE_ENDPOINT = `${BACKEND_URL}/user/delete`;
 const USER_UPDATE_ENDPOINT = `${BACKEND_URL}/user/update`;
-
-// Role constants
-const AUTHOR_CODE = 'AU';
-const EDITOR_CODE = 'ED';
-const REFEREE_CODE = 'RE';
-
-const ROLES = {
-  [AUTHOR_CODE]: 'Author',
-  [EDITOR_CODE]: 'Editor',
-  [REFEREE_CODE]: 'Referee',
-};
+const ROLES_READ_ENDPOINT = `${BACKEND_URL}/roles/read`;
 
 // Helper function to convert role codes to display names
-const getRoleDisplayName = (roleCode) => ROLES[roleCode] || roleCode;
+const getRoleDisplayName = (roleCode, roles) => roles[roleCode] || roleCode;
 
 // New function for filtering users
 const filterUsers = (users, filters) => {
@@ -59,8 +49,8 @@ const sortUsers = (users, sortConfig) => {
       const bRoles = b.roleCodes && b.roleCodes.length > 0 ? b.roleCodes : (b.roles || []);
       
       // Get display names of first roles (or empty string if no roles)
-      const aRole = aRoles.length > 0 ? getRoleDisplayName(aRoles[0]) : '';
-      const bRole = bRoles.length > 0 ? getRoleDisplayName(bRoles[0]) : '';
+      const aRole = aRoles.length > 0 ? getRoleDisplayName(aRoles[0], sortConfig.roles) : '';
+      const bRole = bRoles.length > 0 ? getRoleDisplayName(bRoles[0], sortConfig.roles) : '';
       
       return sortConfig.direction === 'asc' 
         ? aRole.localeCompare(bRole)
@@ -88,7 +78,7 @@ const sortUsers = (users, sortConfig) => {
 };
 
 // New component for search/filter controls
-function UserFilters({ filters, setFilters }) {
+function UserFilters({ filters, setFilters, roles }) {
   const handleSearchChange = (e) => {
     setFilters({ ...filters, searchTerm: e.target.value });
   };
@@ -119,7 +109,7 @@ function UserFilters({ filters, setFilters }) {
           aria-label="Filter by role"
         >
           <option value="">All Roles</option>
-          {Object.entries(ROLES).map(([code, name]) => (
+          {Object.entries(roles).map(([code, name]) => (
             <option key={code} value={code}>{name}</option>
           ))}
         </select>
@@ -143,7 +133,8 @@ UserFilters.propTypes = {
     searchTerm: propTypes.string,
     selectedRole: propTypes.string
   }).isRequired,
-  setFilters: propTypes.func.isRequired
+  setFilters: propTypes.func.isRequired,
+  roles: propTypes.object.isRequired
 };
 
 // New component for sorting controls
@@ -200,7 +191,8 @@ function AddUserForm({
   cancel,
   fetchUsers,
   setError,
-  setIsOperationLoading
+  setIsOperationLoading,
+  roles
 }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -284,7 +276,7 @@ function AddUserForm({
         <div className="roles-container">
           <h4>Select Roles</h4>
           <div className="roles-checkboxes">
-            {Object.entries(ROLES).map(([code, displayName]) => (
+            {Object.entries(roles).map(([code, displayName]) => (
               <div key={code} className="role-checkbox">
                 <input
                   type="checkbox"
@@ -312,11 +304,13 @@ AddUserForm.propTypes = {
   cancel: propTypes.func.isRequired,
   fetchUsers: propTypes.func.isRequired,
   setError: propTypes.func.isRequired,
-  setIsOperationLoading: propTypes.func.isRequired
+  setIsOperationLoading: propTypes.func.isRequired,
+  roles: propTypes.object.isRequired
 };
 
 function EditUserForm({ 
-  visible, cancel, fetchUsers, setError, user, setIsOperationLoading
+  visible, cancel, fetchUsers, setError, user, setIsOperationLoading,
+  roles
 }) {
   const [name, setName] = useState(user.name);
   const [affiliation, setAffiliation] = useState(user.affiliation || '');
@@ -401,7 +395,7 @@ function EditUserForm({
         <div className="roles-container">
           <h4>Select Roles</h4>
           <div className="roles-checkboxes">
-            {Object.entries(ROLES).map(([code, displayName]) => (
+            {Object.entries(roles).map(([code, displayName]) => (
               <div key={code} className="role-checkbox">
                 <input
                   type="checkbox"
@@ -436,7 +430,8 @@ EditUserForm.propTypes = {
     roles: propTypes.array,
     roleCodes: propTypes.array
   }).isRequired,
-  setIsOperationLoading: propTypes.func.isRequired
+  setIsOperationLoading: propTypes.func.isRequired,
+  roles: propTypes.object.isRequired
 };
 
 
@@ -451,8 +446,8 @@ ErrorMessage.propTypes = {
   message: propTypes.string.isRequired,
 };
 
-function User({ user, onDelete, onEdit, isOperationLoading }) {
-  const { name, email, affiliation, roles, roleCodes } = user;
+function User({ user, onDelete, onEdit, isOperationLoading, roles }) {
+  const { name, email, affiliation, roles: userRoles, roleCodes } = user;
   const handleDelete = () => 
   {
     if (window.confirm(`Are you sure you want to delete ${name}?`)) {
@@ -465,7 +460,7 @@ function User({ user, onDelete, onEdit, isOperationLoading }) {
   };
 
   // Determine which roles to display, prioritizing roleCodes if available
-  const displayRoles = roleCodes && roleCodes.length > 0 ? roleCodes : roles;
+  const displayRoles = roleCodes && roleCodes.length > 0 ? roleCodes : userRoles;
 
   return (
     <div className="user-container">
@@ -481,7 +476,7 @@ function User({ user, onDelete, onEdit, isOperationLoading }) {
         )}
         {displayRoles && displayRoles.length > 0 && (
           <p>
-            Roles: {displayRoles.map(role => getRoleDisplayName(role)).join(', ')}
+            Roles: {displayRoles.map(role => getRoleDisplayName(role, roles)).join(', ')}
           </p>
         )}
       </Link>
@@ -512,7 +507,8 @@ User.propTypes = {
   }).isRequired,
   onDelete: propTypes.func.isRequired,
   onEdit: propTypes.func.isRequired,
-  isOperationLoading: propTypes.bool.isRequired
+  isOperationLoading: propTypes.bool.isRequired,
+  roles: propTypes.object.isRequired
 };
 
 function usersObjectToArray(Data) {
@@ -530,6 +526,16 @@ function Users() {
   const [sortConfig, setSortConfig] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isOperationLoading, setIsOperationLoading] = useState(false);
+  const [roles, setRoles] = useState({});
+
+  const fetchRoles = async () => {
+    try {
+      const { data } = await axios.get(ROLES_READ_ENDPOINT);
+      setRoles(data.roles);
+    } catch (error) {
+      setError(`There was a problem retrieving the roles. ${error}`);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -587,17 +593,14 @@ function Users() {
   useEffect(() => {
     let mounted = true;
 
-    const loadUsers = async () => {
+    const loadData = async () => {
       try {
         setIsLoading(true);
         setError('');
-        const { data } = await axios.get(USERS_READ_ENDPOINT);
-        if (mounted) {
-          setUsers(usersObjectToArray(data.Users));
-        }
+        await Promise.all([fetchRoles(), fetchUsers()]);
       } catch (error) {
         if (mounted) {
-          setError(`There was a problem retrieving the list of users. ${error}`);
+          setError(`There was a problem loading data. ${error}`);
         }
       } finally {
         if (mounted) {
@@ -606,7 +609,7 @@ function Users() {
       }
     };
 
-    loadUsers();
+    loadData();
 
     return () => {
       mounted = false;
@@ -637,7 +640,7 @@ function Users() {
           </header>
           
           <div className="user-controls">
-            <UserFilters filters={filters} setFilters={setFilters} />
+            <UserFilters filters={filters} setFilters={setFilters} roles={roles} />
             
             {filteredUsers.length > 0 && (
               <UserSorting sortConfig={sortConfig} setSortConfig={setSortConfig} />
@@ -656,6 +659,7 @@ function Users() {
             fetchUsers={fetchUsers}
             setError={setError}
             setIsOperationLoading={setIsOperationLoading}
+            roles={roles}
           />
           
           {editingUser && (
@@ -666,6 +670,7 @@ function Users() {
               setError={setError}
               user={editingUser}
               setIsOperationLoading={setIsOperationLoading}
+              roles={roles}
             />
           )}
           
@@ -676,11 +681,12 @@ function Users() {
           ) : sortedUsers.length > 0 ? (
             sortedUsers.map((user) => (
               <User 
-                key={user.email} // Changed from name to email as it's more unique
+                key={user.email}
                 user={user} 
                 onDelete={deleteUser} 
                 onEdit={editUser}
                 isOperationLoading={isOperationLoading}
+                roles={roles}
               />
             ))
           ) : (
