@@ -15,6 +15,199 @@ exports[`Users Component matches snapshot 1`] = `
         Add a User
       </button>
     </header>
+    <div
+      class="user-controls"
+    >
+      <div
+        class="user-filters"
+      >
+        <div
+          class="search-bar"
+        >
+          <input
+            placeholder="Search by name or email"
+            type="text"
+            value=""
+          />
+        </div>
+        <div
+          class="role-filter"
+        >
+          <select
+            aria-label="Filter by role"
+          >
+            <option
+              value=""
+            >
+              All Roles
+            </option>
+            <option
+              value="AU"
+            >
+              Author
+            </option>
+            <option
+              value="ED"
+            >
+              Editor
+            </option>
+            <option
+              value="RE"
+            >
+              Referee
+            </option>
+          </select>
+        </div>
+      </div>
+      <div
+        class="user-sorting"
+      >
+        <select
+          aria-label="Sort users"
+        >
+          <option
+            value=""
+          >
+            Default Order
+          </option>
+          <option
+            value="name-asc"
+          >
+            Name (A-Z)
+          </option>
+          <option
+            value="name-desc"
+          >
+            Name (Z-A)
+          </option>
+          <option
+            value="email-asc"
+          >
+            Email (A-Z)
+          </option>
+          <option
+            value="email-desc"
+          >
+            Email (Z-A)
+          </option>
+          <option
+            value="affiliation-asc"
+          >
+            Affiliation (A-Z)
+          </option>
+          <option
+            value="affiliation-desc"
+          >
+            Affiliation (Z-A)
+          </option>
+          <option
+            value="role-asc"
+          >
+            Role (A-Z)
+          </option>
+          <option
+            value="role-desc"
+          >
+            Role (Z-A)
+          </option>
+        </select>
+      </div>
+    </div>
+    <div
+      class="user-count"
+    >
+      Showing all 3 users
+    </div>
+    <div
+      class="user-container"
+    >
+      <a
+        href="/user1@example.com"
+      >
+        <h2>
+          John Doe
+        </h2>
+        <p>
+          Email: user1@example.com
+        </p>
+        <p>
+          Affiliation: University A
+        </p>
+        <p>
+          Roles: Author, Referee
+        </p>
+      </a>
+      <button
+        type="button"
+      >
+        Delete
+      </button>
+      <button
+        type="button"
+      >
+        Edit
+      </button>
+    </div>
+    <div
+      class="user-container"
+    >
+      <a
+        href="/user2@example.com"
+      >
+        <h2>
+          Jane Smith
+        </h2>
+        <p>
+          Email: user2@example.com
+        </p>
+        <p>
+          Affiliation: Company B
+        </p>
+        <p>
+          Roles: Editor
+        </p>
+      </a>
+      <button
+        type="button"
+      >
+        Delete
+      </button>
+      <button
+        type="button"
+      >
+        Edit
+      </button>
+    </div>
+    <div
+      class="user-container"
+    >
+      <a
+        href="/user3@example.com"
+      >
+        <h2>
+          Bob Johnson
+        </h2>
+        <p>
+          Email: user3@example.com
+        </p>
+        <p>
+          Affiliation: Organization C
+        </p>
+        <p>
+          Roles: Author
+        </p>
+      </a>
+      <button
+        type="button"
+      >
+        Delete
+      </button>
+      <button
+        type="button"
+      >
+        Edit
+      </button>
+    </div>
   </div>
 </DocumentFragment>
 `;

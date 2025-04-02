@@ -671,14 +671,12 @@ function Users() {
           
           {error && <ErrorMessage message={error} />}
           
-          {isOperationLoading ? (
-            <Loading message="Processing your request..." />
-          ) : sortedUsers.length > 0 ? (
+          {sortedUsers.length > 0 ? (
             sortedUsers.map((user) => (
               <User 
-                key={user.email} // Changed from name to email as it's more unique
-                user={user} 
-                onDelete={deleteUser} 
+                key={user.email}
+                user={user}
+                onDelete={deleteUser}
                 onEdit={editUser}
                 isOperationLoading={isOperationLoading}
               />
@@ -686,6 +684,8 @@ function Users() {
           ) : (
             <p className="no-results">No users match your filters. Try adjusting your search criteria.</p>
           )}
+
+          {isOperationLoading && <Loading message="Processing your request..." />}
         </>
       )}
     </div>

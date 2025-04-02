@@ -194,6 +194,7 @@ const config = {
   // Whether to use watchman for file crawling
   // watchman: true,
   testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/src/setupTests.js"],
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "<rootDir>/test/jest/__mocks__/styleMock.js"
   },

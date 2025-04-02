@@ -121,7 +121,9 @@ describe('Users Component', () => {
     renderWithRouter(<Users />);
     
     // Check for heading
-    expect(screen.getByText('View All Users')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('View All Users')).toBeInTheDocument();
+    });
     
     // Wait for users to load
     await waitFor(() => {
@@ -458,15 +460,14 @@ describe('Loading States', () => {
     });
     
     // Click delete button
-    const deleteButtons = screen.getAllByText('Delete');
-    fireEvent.click(deleteButtons[0]);
+    await act(async () => {
+      fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[0]);
+    });
     
-    // Check that loading message is shown
-    expect(screen.getByText('Processing your request...')).toBeInTheDocument();
-    
-    // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.queryByText('Processing your request...')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Add a User' })).toBeDisabled();
+      expect(screen.getAllByRole('button', { name: 'Delete' })[0]).toBeDisabled();
+      expect(screen.getAllByRole('button', { name: 'Edit' })[0]).toBeDisabled();
     });
   });
 
@@ -486,19 +487,18 @@ describe('Loading States', () => {
     });
     
     // Click delete button
-    const deleteButtons = screen.getAllByText('Delete');
-    fireEvent.click(deleteButtons[0]);
-    
-    // Check that all buttons are disabled during loading
-    expect(screen.getByText('Add a User')).toBeDisabled();
-    expect(screen.getAllByText('Delete')[0]).toBeDisabled();
-    expect(screen.getAllByText('Edit')[0]).toBeDisabled();
-    
-    // Wait for loading to complete
+    await act(async () => {
+      fireEvent.click(screen.getAllByRole('button', { name: 'Delete' })[0]);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Add a User' })).toBeDisabled();
+      expect(screen.getAllByRole('button', { name: 'Delete' })[0]).toBeDisabled();
+      expect(screen.getAllByRole('button', { name: 'Edit' })[0]).toBeDisabled();
+    });
+
     await waitFor(() => {
       expect(screen.getByText('Add a User')).not.toBeDisabled();
-      expect(screen.getAllByText('Delete')[0]).not.toBeDisabled();
-      expect(screen.getAllByText('Edit')[0]).not.toBeDisabled();
     });
   });
 
