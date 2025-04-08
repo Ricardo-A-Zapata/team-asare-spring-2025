@@ -6,6 +6,7 @@ const PAGES = [
   { label: 'Home', destination: '/' },
   { label: 'View All Users', destination: '/users' },
   { label: 'View All Submissions', destination: '/submissions' },
+  { label: 'View All Manuscripts', destination: '/manuscripts' },
 ];
 
 function NavLink({ page }) {
@@ -28,9 +29,6 @@ function Navbar() {
     <nav>
       <ul className="wrapper">
         {PAGES.map((page) => <NavLink key={page.destination} page={page} />)}
-        <li>
-          <Link to="/manuscripts">Manuscripts</Link>
-        </li>
       </ul>
     </nav>
   );
