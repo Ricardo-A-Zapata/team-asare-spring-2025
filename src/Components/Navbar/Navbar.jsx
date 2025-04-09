@@ -2,7 +2,7 @@ import React from 'react';
 import propTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-const PAGES = [
+export const PAGES = [
   { label: 'Home', destination: '/' },
   { label: 'View All Users', destination: '/users' },
   { label: 'View All Submissions', destination: '/submissions' },

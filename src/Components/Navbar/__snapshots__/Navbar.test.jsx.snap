@@ -27,6 +27,13 @@ exports[`Navbar Component matches snapshot 1`] = `
           View All Submissions
         </a>
       </li>
+      <li>
+        <a
+          href="/manuscripts"
+        >
+          View All Manuscripts
+        </a>
+      </li>
     </ul>
   </nav>
 </DocumentFragment>

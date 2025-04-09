@@ -4,6 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import Navbar from './Navbar';
 import '@testing-library/jest-dom';
 import { UNSAFE_logV6DeprecationWarnings } from 'react-router';
+import { PAGES } from './Navbar';
+
 
 UNSAFE_logV6DeprecationWarnings(false);
 
@@ -25,7 +27,7 @@ describe('Navbar Component', () => {
     );
 
     const links = screen.getAllByRole('link');
-    expect(links.length).toBe(3); // Since we have 3 pages in PAGES
+    expect(links.length).toBe(PAGES.length);
   });
 
   test('renders navigation links with correct text and href attributes', () => {
@@ -38,10 +40,12 @@ describe('Navbar Component', () => {
     const homeLink = screen.getByRole('link', { name: 'Home' });
     const usersLink = screen.getByRole('link', { name: 'View All Users' });
     const submissionsLink = screen.getByRole('link', { name: 'View All Submissions' });
+    const manuscriptsLink = screen.getByRole('link', { name: 'View All Manuscripts' });
 
     expect(homeLink).toHaveAttribute('href', '/');
     expect(usersLink).toHaveAttribute('href', '/users');
     expect(submissionsLink).toHaveAttribute('href', '/submissions');
+    expect(manuscriptsLink).toHaveAttribute('href', '/manuscripts');
   });
 
   test('matches snapshot', () => {
