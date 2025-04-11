@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 
@@ -33,6 +33,74 @@ function filterManuscripts(manuscripts, searchTerm) {
   );
 }
 
+// Sort manuscripts based on sort configuration
+function sortManuscripts(manuscripts, sortConfig) {
+  if (!sortConfig) return manuscripts;
+
+  return [...manuscripts].sort((a, b) => {
+    switch (sortConfig.field) {
+      case 'title':
+        return sortConfig.direction === 'asc' 
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title);
+      case 'author':
+        return sortConfig.direction === 'asc'
+          ? a.author.localeCompare(b.author)
+          : b.author.localeCompare(a.author);
+      case 'state':
+        return sortConfig.direction === 'asc'
+          ? a.state.localeCompare(b.state)
+          : b.state.localeCompare(a.state);
+      case 'version':
+        return sortConfig.direction === 'asc'
+          ? a.version - b.version
+          : b.version - a.version;
+      default:
+        return 0;
+    }
+  });
+}
+
+function ManuscriptSorting({ sortConfig, setSortConfig }) {
+  const handleSortChange = (event) => {
+    const value = event.target.value;
+    if (value === 'default') {
+      setSortConfig(null);
+    } else {
+      const [field, direction] = value.split('-');
+      setSortConfig({ field, direction });
+    }
+  };
+
+  return (
+    <div className="manuscript-sort">
+      <select
+        value={sortConfig ? `${sortConfig.field}-${sortConfig.direction}` : 'default'}
+        onChange={handleSortChange}
+        aria-label="Sort manuscripts"
+      >
+        <option value="default">Default Order</option>
+        <option value="title-asc">Title (A-Z)</option>
+        <option value="title-desc">Title (Z-A)</option>
+        <option value="author-asc">Author (A-Z)</option>
+        <option value="author-desc">Author (Z-A)</option>
+        <option value="state-asc">State (A-Z)</option>
+        <option value="state-desc">State (Z-A)</option>
+        <option value="version-asc">Version (Low to High)</option>
+        <option value="version-desc">Version (High to Low)</option>
+      </select>
+    </div>
+  );
+}
+
+ManuscriptSorting.propTypes = {
+  sortConfig: PropTypes.shape({
+    field: PropTypes.string.isRequired,
+    direction: PropTypes.oneOf(['asc', 'desc']).isRequired
+  }),
+  setSortConfig: PropTypes.func.isRequired
+};
+
 function StateDisplay({ state }) {
   const stateClass = state.toLowerCase().replace('_', '-');
   
@@ -49,19 +117,24 @@ StateDisplay.propTypes = {
 
 function Manuscript({ manuscript }) {
   const { id, title, author, author_email, state, abstract, version } = manuscript;
+  const navigate = useNavigate();
+  
+  const handleViewDetails = () => {
+    navigate(`/manuscripts/${id}`);
+  };
   
   return (
     <div className="manuscript-container">
-      <Link to={`/manuscripts/${id}`}>
+      <div className="manuscript-content">
         <h2>{title}</h2>
         <p><strong>Author:</strong> {author}</p>
         <p><strong>Email:</strong> {author_email}</p>
         <p><strong>Version:</strong> {version}</p>
         <p><strong>State:</strong> <StateDisplay state={state} /></p>
         <p><strong>Abstract:</strong> {abstract}</p>
-      </Link>
+      </div>
       <div className="manuscript-controls">
-        <button type="button">View Details</button>
+        <button type="button" onClick={handleViewDetails}>View Details</button>
       </div>
     </div>
   );
@@ -87,6 +160,7 @@ function Manuscripts() {
   const [searchTerm, setSearchTerm] = useState('');
   const [addingManuscript, setAddingManuscript] = useState(false);
   const [isOperationLoading, setIsOperationLoading] = useState(false);
+  const [sortConfig, setSortConfig] = useState(null);
 
   const fetchManuscripts = async () => {
     try {
@@ -118,10 +192,12 @@ function Manuscripts() {
     fetchManuscripts();
   }, []);
 
-  // Update filtered manuscripts when search term changes
+  // Update filtered manuscripts when search term or sort config changes
   useEffect(() => {
-    setFilteredManuscripts(filterManuscripts(manuscripts, searchTerm));
-  }, [manuscripts, searchTerm]);
+    let result = filterManuscripts(manuscripts, searchTerm);
+    result = sortManuscripts(result, sortConfig);
+    setFilteredManuscripts(result);
+  }, [manuscripts, searchTerm, sortConfig]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -166,18 +242,24 @@ function Manuscripts() {
             setIsOperationLoading={setIsOperationLoading}
           />
           
-          <div className="manuscript-search">
-            <input
-              type="text"
-              placeholder="Search by title, author, email or state"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              aria-label="Search manuscripts"
-            />
-            {searchTerm && (
-              <button type="button" onClick={clearSearch}>
-                Clear
-              </button>
+          <div className="manuscript-controls">
+            <div className="manuscript-search">
+              <input
+                type="text"
+                placeholder="Search by title, author, email or state"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                aria-label="Search manuscripts"
+              />
+              {searchTerm && (
+                <button type="button" onClick={clearSearch}>
+                  Clear
+                </button>
+              )}
+            </div>
+            
+            {filteredManuscripts.length > 0 && (
+              <ManuscriptSorting sortConfig={sortConfig} setSortConfig={setSortConfig} />
             )}
           </div>
           

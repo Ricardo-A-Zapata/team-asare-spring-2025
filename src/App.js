@@ -15,6 +15,7 @@ import Navbar from './Components/Navbar';
 import Users from './Components/Users';
 import Submissions from './Components/Submissions'; 
 import Manuscripts from './Components/Manuscripts/Manuscripts';
+import ManuscriptDetails from './Components/Manuscripts/ManuscriptDetails';
 import { BACKEND_URL } from './constants';
 
 const USER_READ_SINGLE_ENDPOINT = `${BACKEND_URL}/user/read`;
@@ -140,6 +141,7 @@ function App() {
         <Route path="users/:email" element={<UserPage />} />
         <Route path="submissions" element={<Submissions />} />
         <Route path="manuscripts" element={<Manuscripts />} />
+        <Route path="manuscripts/:id" element={<ManuscriptDetails />} />
       </Routes>
     </BrowserRouter>
   );
