@@ -109,8 +109,10 @@ function UserFilters({ filters, setFilters, roles }) {
           aria-label="Filter by role"
         >
           <option value="">All Roles</option>
-          {Object.entries(roles || {}).map(([code, name]) => (
-            <option key={code} value={code}>{name}</option>
+          {Object.entries(roles || {})
+            .filter(([code]) => code === 'AU' || code === 'ED' || code === 'RE')
+            .map(([code, name]) => (
+              <option key={code} value={code}>{name}</option>
           ))}
         </select>
       </div>

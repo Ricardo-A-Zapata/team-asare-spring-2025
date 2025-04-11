@@ -87,9 +87,10 @@ header button:disabled {
 
 .manuscript-controls {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 15px;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 20px;
 }
 
 .manuscript-controls button {
@@ -221,4 +222,121 @@ header button:disabled {
   background-color: #f5f5f5;
   border-radius: 4px;
   color: #666;
+}
+
+.manuscript-detail-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.manuscript-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.manuscript-detail-header h1 {
+  margin: 0;
+  color: #333;
+  font-size: 2rem;
+}
+
+.manuscript-detail-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+.manuscript-detail-section {
+  margin-bottom: 2rem;
+}
+
+.manuscript-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.manuscript-detail-section h2 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.manuscript-detail-section p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+  color: #444;
+}
+
+.manuscript-detail-section p strong {
+  color: #333;
+  margin-right: 0.5rem;
+}
+
+.back-button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #4285f4;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.back-button:hover {
+  background-color: #3367d6;
+}
+
+.error-container,
+.not-found {
+  text-align: center;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+.error-container h2,
+.not-found h2 {
+  color: #c62828;
+  margin-bottom: 1rem;
+}
+
+.error-container p,
+.not-found p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.manuscript-sort {
+  min-width: 200px;
+}
+
+.manuscript-sort select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.manuscript-sort select:hover {
+  border-color: #4285f4;
+}
+
+.manuscript-sort select:focus {
+  outline: none;
+  border-color: #4285f4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
 } 
