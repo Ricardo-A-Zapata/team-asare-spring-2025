@@ -16,6 +16,7 @@ import Users from './Components/Users';
 import Submissions from './Components/Submissions'; 
 import Manuscripts from './Components/Manuscripts/Manuscripts';
 import ManuscriptDetails from './Components/Manuscripts/ManuscriptDetails';
+import About from './Components/About/About';
 import { BACKEND_URL } from './constants';
 
 const USER_READ_SINGLE_ENDPOINT = `${BACKEND_URL}/user/read`;
@@ -142,6 +143,7 @@ function App() {
         <Route path="submissions" element={<Submissions />} />
         <Route path="manuscripts" element={<Manuscripts />} />
         <Route path="manuscripts/:id" element={<ManuscriptDetails />} />
+        <Route path="about" element={<About />} />
       </Routes>
     </BrowserRouter>
   );
