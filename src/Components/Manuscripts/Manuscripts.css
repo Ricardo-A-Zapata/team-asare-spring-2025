@@ -13,6 +13,8 @@ header {
 
 header h1 {
   margin: 0;
+  color: #333;
+  font-size: 2.5rem;
 }
 
 header button {
@@ -23,6 +25,7 @@ header button {
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  font-size: 1rem;
 }
 
 header button:hover {
@@ -40,6 +43,7 @@ header button:disabled {
   padding: 20px;
   margin-bottom: 20px;
   transition: all 0.3s ease;
+  background-color: white;
 }
 
 .manuscript-container:hover {
@@ -106,17 +110,18 @@ header button:disabled {
 }
 
 .manuscript-search {
+  flex: 1;
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
   gap: 10px;
 }
 
 .manuscript-search input {
   flex: 1;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 1rem;
 }
 
 .manuscript-search button {
@@ -321,14 +326,14 @@ header button:disabled {
 }
 
 .manuscript-sort select {
-  width: 100%;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   background-color: white;
-  font-size: 14px;
+  font-size: 1rem;
   color: #333;
   cursor: pointer;
+  min-width: 150px;
 }
 
 .manuscript-sort select:hover {
@@ -339,4 +344,30 @@ header button:disabled {
   outline: none;
   border-color: #4285f4;
   box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+  margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 10px;
+  }
+  
+  .manuscript-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .manuscript-search {
+    width: 100%;
+  }
+  
+  .manuscript-sort select {
+    width: 100%;
+  }
 } 
