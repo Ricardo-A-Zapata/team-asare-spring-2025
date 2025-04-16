@@ -6,7 +6,6 @@ import { BACKEND_URL } from '../../constants';
 import './Home.css';
 
 const JOURNAL_NAME_ENDPOINT = `${BACKEND_URL}/journalname`;
-
 function ErrorMessage({ message }) {
   return <div className="error-message">{message}</div>;
 }

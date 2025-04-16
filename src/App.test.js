@@ -3,6 +3,50 @@ import { render, screen } from '@testing-library/react';
 import App from './App';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
+import axios from 'axios';
+
+jest.mock('axios');
+
+beforeEach(() => {
+  axios.get.mockImplementation((url) => {
+    if (url.includes('/journalname')) {
+      return Promise.resolve({
+        data: { "Journal Name": "Mock Journal" },
+      });
+    }
+
+    if (url.includes('/manuscripts')) {
+      return Promise.resolve({
+        data: {
+          manuscripts: {
+            '1': {
+              title: 'Mock Manuscript One',
+              author: 'Author A',
+              author_email: 'authora@example.com',
+              state: 'Pending',
+              abstract: 'This is the abstract of manuscript one.',
+              version: 1,
+            },
+            '2': {
+              title: 'Mock Manuscript Two',
+              author: 'Author B',
+              author_email: 'authorb@example.com',
+              state: 'Approved',
+              abstract: 'This is the abstract of manuscript two.',
+              version: 2,
+            },
+          },
+        },
+      });
+    }
+
+    return Promise.reject(new Error(`Unhandled URL: ${url}`));
+  });
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
+});
 
 test('renders Navbar component', () => {
   render(<App />);
