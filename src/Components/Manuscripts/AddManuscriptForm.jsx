@@ -6,7 +6,7 @@ import { BACKEND_URL } from '../../constants';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscripts/create`;
+const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscript/create`;
 
 function AddManuscriptForm({
   visible,
