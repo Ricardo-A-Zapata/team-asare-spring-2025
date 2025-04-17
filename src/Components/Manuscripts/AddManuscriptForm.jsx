@@ -6,6 +6,7 @@ import { BACKEND_URL } from '../../constants';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscripts`;
 const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscript/create`;
 
 function AddManuscriptForm({
@@ -29,13 +30,7 @@ function AddManuscriptForm({
     }
   }, [visible]);
 
-  const changeTitle = (event) => { setTitle(event.target.value); };
-  const changeAuthor = (event) => { setAuthor(event.target.value); };
-  const changeAuthorEmail = (event) => { setAuthorEmail(event.target.value); };
-  const changeAbstract = (event) => { setAbstract(event.target.value); };
-  const changeText = (event) => { setText(event.target.value); };
-
-  const addManuscript = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     
     if (!title || !author || !authorEmail || !abstract || !text) {
@@ -48,17 +43,30 @@ function AddManuscriptForm({
       author,
       author_email: authorEmail,
       abstract,
-      text
+      text,
+      state: "SUBMITTED"
     };
     
     try {
       setIsOperationLoading(true);
-      await axios.put(MANUSCRIPT_CREATE_ENDPOINT, newManuscript);
+      console.log('Sending manuscript to:', MANUSCRIPT_CREATE_ENDPOINT);
+      console.log('Manuscript data:', newManuscript);
+      const response = await axios.post(MANUSCRIPT_CREATE_ENDPOINT, newManuscript);
+      console.log('Server response:', response);
       await fetchManuscripts();
+      // Reset form
+      setTitle('');
+      setAuthor('');
+      setAuthorEmail('');
+      setAbstract('');
+      setText('');
+      // Close form
       cancel();
     } catch (error) {
+      console.error('Full error object:', error);
+      console.error('Error response:', error.response);
+      console.error('Error request:', error.request);
       setError(`Error creating manuscript: ${error.response?.data?.message || error.message}`);
-      console.error('Error creating manuscript:', error);
     } finally {
       setIsOperationLoading(false);
     }
@@ -70,7 +78,7 @@ function AddManuscriptForm({
     <div className="form-container">
       <h3>Submit New Manuscript</h3>
       
-      <form className="manuscript-form">
+      <form onSubmit={handleSubmit} className="manuscript-form">
         <div className="form-fields">
           <div className="form-field">
             <label htmlFor="title">Title</label>
@@ -79,7 +87,7 @@ function AddManuscriptForm({
               type="text" 
               id="title" 
               value={title} 
-              onChange={changeTitle}
+              onChange={(e) => setTitle(e.target.value)}
               ref={titleInputRef}
             />
           </div>
@@ -91,7 +99,7 @@ function AddManuscriptForm({
               type="text" 
               id="author" 
               value={author} 
-              onChange={changeAuthor}
+              onChange={(e) => setAuthor(e.target.value)}
             />
           </div>
           
@@ -102,7 +110,7 @@ function AddManuscriptForm({
               type="email" 
               id="authorEmail" 
               value={authorEmail} 
-              onChange={changeAuthorEmail}
+              onChange={(e) => setAuthorEmail(e.target.value)}
             />
           </div>
           
@@ -112,7 +120,7 @@ function AddManuscriptForm({
               required 
               id="abstract" 
               value={abstract} 
-              onChange={changeAbstract}
+              onChange={(e) => setAbstract(e.target.value)}
               rows="4"
             />
           </div>
@@ -123,7 +131,7 @@ function AddManuscriptForm({
               required 
               id="text" 
               value={text} 
-              onChange={changeText}
+              onChange={(e) => setText(e.target.value)}
               rows="8"
             />
           </div>
@@ -131,7 +139,7 @@ function AddManuscriptForm({
         
         <div className="form-actions">
           <button type="button" onClick={cancel}>Cancel</button>
-          <button type="submit" onClick={addManuscript}>Submit</button>
+          <button type="submit">Submit</button>
         </div>
       </form>
     </div>
