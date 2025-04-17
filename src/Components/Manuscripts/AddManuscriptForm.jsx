@@ -6,7 +6,7 @@ import { BACKEND_URL } from '../../constants';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscripts`;
+// const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscripts`;
 const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscript/create`;
 
 function AddManuscriptForm({
@@ -51,7 +51,7 @@ function AddManuscriptForm({
       setIsOperationLoading(true);
       console.log('Sending manuscript to:', MANUSCRIPT_CREATE_ENDPOINT);
       console.log('Manuscript data:', newManuscript);
-      const response = await axios.post(MANUSCRIPT_CREATE_ENDPOINT, newManuscript);
+      const response = await axios.put(MANUSCRIPT_CREATE_ENDPOINT, newManuscript);
       console.log('Server response:', response);
       await fetchManuscripts();
       // Reset form
