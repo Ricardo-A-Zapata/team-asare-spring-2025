@@ -11,8 +11,18 @@ const RECENT_MANUSCRIPTS_ENDPOINT = `${BACKEND_URL}/manuscripts/recent`;
 const RECENT_SUBMISSIONS_ENDPOINT = `${BACKEND_URL}/submissions/recent`;
 
 // Fallback endpoints if the dedicated recent endpoints don't exist
-const ALL_MANUSCRIPTS_ENDPOINT = `${BACKEND_URL}/manuscripts/read`;
+const ALL_MANUSCRIPTS_ENDPOINT = `${BACKEND_URL}/manuscripts`;
 const ALL_SUBMISSIONS_ENDPOINT = `${BACKEND_URL}/submissions/read`;
+
+// Helper function to convert manuscripts object to array
+function manuscriptsToArray(manuscripts) {
+  if (Array.isArray(manuscripts)) return manuscripts;
+  
+  return Object.entries(manuscripts).map(([id, manuscript]) => ({
+    id,
+    ...manuscript
+  }));
+}
 
 function ErrorMessage({ message }) {
   return <div className="error-message">{message}</div>;
@@ -34,7 +44,7 @@ function ActivityCard({ title, items, emptyMessage, linkPrefix }) {
                 {item.title || item.name}
               </Link>
               <span className="activity-date">
-                {new Date(item.date || item.updatedAt).toLocaleDateString()}
+                {new Date(item.date || item.updatedAt || item.createdAt || Date.now()).toLocaleDateString()}
               </span>
             </li>
           ))}
@@ -92,7 +102,8 @@ function Home() {
           // First try the dedicated endpoint for recent manuscripts
           const manuscriptsResponse = await axios.get(RECENT_MANUSCRIPTS_ENDPOINT);
           if (manuscriptsResponse.data && manuscriptsResponse.data.manuscripts) {
-            setRecentManuscripts(manuscriptsResponse.data.manuscripts.slice(0, 5));
+            const processedManuscripts = manuscriptsToArray(manuscriptsResponse.data.manuscripts);
+            setRecentManuscripts(processedManuscripts.slice(0, 5));
           }
         } catch (error) {
           console.warn("Dedicated recent manuscripts endpoint not available, trying fallback:", error);
@@ -100,21 +111,18 @@ function Home() {
           // Fallback: try to get all manuscripts and sort them ourselves
           try {
             const allManuscriptsResponse = await axios.get(ALL_MANUSCRIPTS_ENDPOINT);
-            if (allManuscriptsResponse.data && allManuscriptsResponse.data.Manuscripts) {
+            if (allManuscriptsResponse.data && allManuscriptsResponse.data.manuscripts) {
               // Convert from object to array if needed
-              let manuscripts = allManuscriptsResponse.data.Manuscripts;
-              if (!Array.isArray(manuscripts) && typeof manuscripts === 'object') {
-                manuscripts = Object.values(manuscripts);
-              }
+              const processedManuscripts = manuscriptsToArray(allManuscriptsResponse.data.manuscripts);
               
               // Sort by date (if available) and take the 5 most recent
-              manuscripts.sort((a, b) => {
+              processedManuscripts.sort((a, b) => {
                 const dateA = new Date(a.date || a.updatedAt || a.createdAt || 0);
                 const dateB = new Date(b.date || b.updatedAt || b.createdAt || 0);
                 return dateB - dateA; // Sort descending (newest first)
               });
               
-              setRecentManuscripts(manuscripts.slice(0, 5));
+              setRecentManuscripts(processedManuscripts.slice(0, 5));
             }
           } catch (fallbackError) {
             console.warn("Could not fetch manuscripts:", fallbackError);
@@ -224,7 +232,7 @@ function Home() {
               <ActivityCard 
                 title="Recent Manuscripts" 
                 items={recentManuscripts} 
-                emptyMessage="No recent manuscripts"
+                emptyMessage="No recent manuscripts. Submit a new manuscript to see it here."
                 linkPrefix="/manuscripts" 
               />
               <ActivityCard 
