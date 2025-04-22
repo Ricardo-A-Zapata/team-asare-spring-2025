@@ -26,13 +26,16 @@ function AddManuscriptForm({
   const [isLoadingAuthors, setIsLoadingAuthors] = useState(false);
   const [selectedAuthorId, setSelectedAuthorId] = useState('');
   const titleInputRef = useRef(null);
+  const authorSelectRef = useRef(null);
 
-  // Focus the title input when the form becomes visible
+  // Focus the author select when the form becomes visible
   useEffect(() => {
-    if (visible && titleInputRef.current) {
-      titleInputRef.current.focus();
+    if (visible && authorSelectRef.current) {
+      setTimeout(() => {
+        authorSelectRef.current.focus();
+      }, 100);
     }
-  }, [visible]);
+  }, [visible, isLoadingAuthors]);
 
   // Fetch users with the AU role when the form becomes visible
   useEffect(() => {
@@ -61,6 +64,9 @@ function AddManuscriptForm({
           return roleCodes.includes('AU') || roles.includes('AU');
         });
         
+        // Sort authors by name for easier selection
+        authorUsers.sort((a, b) => a.name.localeCompare(b.name));
+        
         setAuthors(authorUsers);
       }
     } catch (error) {
@@ -80,6 +86,11 @@ function AddManuscriptForm({
       if (selectedAuthor) {
         setAuthor(selectedAuthor.name);
         setAuthorEmail(selectedAuthor.email);
+        
+        // Focus on the title field after selecting an author
+        if (titleInputRef.current) {
+          titleInputRef.current.focus();
+        }
       }
     } else {
       // Clear author fields if no selection
@@ -142,27 +153,40 @@ function AddManuscriptForm({
           <div className="form-field">
             <label htmlFor="authorSelect">Select Author</label>
             {isLoadingAuthors ? (
-              <div className="loading-text">Loading authors...</div>
+              <div className="loading-text">Loading available authors...</div>
             ) : (
               <>
-                <select
-                  id="authorSelect"
-                  value={selectedAuthorId}
-                  onChange={handleAuthorChange}
-                  required
-                >
-                  <option value="">-- Select an Author --</option>
-                  {authors.map((author) => (
-                    <option key={author.email} value={author.email}>
-                      {author.name} ({author.email})
-                    </option>
-                  ))}
-                </select>
-                
-                {selectedAuthorId && (
-                  <div className="selected-author-info">
-                    <p><strong>Name:</strong> {author}</p>
-                    <p><strong>Email:</strong> {authorEmail}</p>
+                {authors.length > 0 ? (
+                  <>
+                    <select
+                      id="authorSelect"
+                      value={selectedAuthorId}
+                      onChange={handleAuthorChange}
+                      required
+                      ref={authorSelectRef}
+                    >
+                      <option value="">-- Select an Author --</option>
+                      {authors.map((author) => (
+                        <option key={author.email} value={author.email}>
+                          {author.name} ({author.email})
+                        </option>
+                      ))}
+                    </select>
+                    
+                    {selectedAuthorId ? (
+                      <div className="selected-author-info">
+                        <p><strong>Name:</strong> {author}</p>
+                        <p><strong>Email:</strong> {authorEmail}</p>
+                      </div>
+                    ) : (
+                      <div className="author-selection-help">
+                        Please select an author who will be credited for this manuscript.
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="no-authors-message">
+                    No authors found. Users must have the Author (AU) role to appear here.
                   </div>
                 )}
               </>
@@ -178,6 +202,7 @@ function AddManuscriptForm({
               value={title} 
               onChange={(e) => setTitle(e.target.value)}
               ref={titleInputRef}
+              placeholder="Enter manuscript title"
             />
           </div>
           
@@ -189,6 +214,7 @@ function AddManuscriptForm({
               value={abstract} 
               onChange={(e) => setAbstract(e.target.value)}
               rows="4"
+              placeholder="Provide a brief summary of your manuscript"
             />
           </div>
           
@@ -200,13 +226,20 @@ function AddManuscriptForm({
               value={text} 
               onChange={(e) => setText(e.target.value)}
               rows="8"
+              placeholder="Enter the full text of your manuscript"
             />
           </div>
         </div>
         
         <div className="form-actions">
           <button type="button" onClick={cancel}>Cancel</button>
-          <button type="submit" disabled={!selectedAuthorId}>Submit</button>
+          <button 
+            type="submit" 
+            disabled={!selectedAuthorId}
+            title={!selectedAuthorId ? "Please select an author first" : "Submit manuscript"}
+          >
+            Submit
+          </button>
         </div>
       </form>
     </div>
