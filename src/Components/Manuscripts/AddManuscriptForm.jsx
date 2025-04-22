@@ -8,6 +8,7 @@ import { BACKEND_URL } from '../../constants';
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
 // const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscripts`;
 const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscript/create`;
+const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
 
 function AddManuscriptForm({
   visible,
@@ -21,6 +22,9 @@ function AddManuscriptForm({
   const [authorEmail, setAuthorEmail] = useState('');
   const [abstract, setAbstract] = useState('');
   const [text, setText] = useState('');
+  const [authors, setAuthors] = useState([]);
+  const [isLoadingAuthors, setIsLoadingAuthors] = useState(false);
+  const [selectedAuthorId, setSelectedAuthorId] = useState('');
   const titleInputRef = useRef(null);
 
   // Focus the title input when the form becomes visible
@@ -29,6 +33,60 @@ function AddManuscriptForm({
       titleInputRef.current.focus();
     }
   }, [visible]);
+
+  // Fetch users with the AU role when the form becomes visible
+  useEffect(() => {
+    if (visible) {
+      fetchAuthors();
+    }
+  }, [visible]);
+
+  const fetchAuthors = async () => {
+    try {
+      setIsLoadingAuthors(true);
+      // First get all users
+      const usersResponse = await axios.get(USERS_READ_ENDPOINT);
+      if (usersResponse.data && usersResponse.data.Users) {
+        // Convert from object to array if needed
+        let users = usersResponse.data.Users;
+        if (!Array.isArray(users) && typeof users === 'object') {
+          users = Object.values(users);
+        }
+        
+        // Filter users with the 'AU' role
+        const authorUsers = users.filter(user => {
+          // Check in both roleCodes and roles arrays for backward compatibility
+          const roleCodes = user.roleCodes || [];
+          const roles = user.roles || [];
+          return roleCodes.includes('AU') || roles.includes('AU');
+        });
+        
+        setAuthors(authorUsers);
+      }
+    } catch (error) {
+      console.error('Error fetching authors:', error);
+      setError('Could not load authors. Please try again later.');
+    } finally {
+      setIsLoadingAuthors(false);
+    }
+  };
+
+  const handleAuthorChange = (e) => {
+    const authorId = e.target.value;
+    setSelectedAuthorId(authorId);
+    
+    if (authorId) {
+      const selectedAuthor = authors.find(a => a.email === authorId);
+      if (selectedAuthor) {
+        setAuthor(selectedAuthor.name);
+        setAuthorEmail(selectedAuthor.email);
+      }
+    } else {
+      // Clear author fields if no selection
+      setAuthor('');
+      setAuthorEmail('');
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -60,6 +118,7 @@ function AddManuscriptForm({
       setAuthorEmail('');
       setAbstract('');
       setText('');
+      setSelectedAuthorId('');
       // Close form
       cancel();
     } catch (error) {
@@ -81,6 +140,36 @@ function AddManuscriptForm({
       <form onSubmit={handleSubmit} className="manuscript-form">
         <div className="form-fields">
           <div className="form-field">
+            <label htmlFor="authorSelect">Select Author</label>
+            {isLoadingAuthors ? (
+              <div className="loading-text">Loading authors...</div>
+            ) : (
+              <>
+                <select
+                  id="authorSelect"
+                  value={selectedAuthorId}
+                  onChange={handleAuthorChange}
+                  required
+                >
+                  <option value="">-- Select an Author --</option>
+                  {authors.map((author) => (
+                    <option key={author.email} value={author.email}>
+                      {author.name} ({author.email})
+                    </option>
+                  ))}
+                </select>
+                
+                {selectedAuthorId && (
+                  <div className="selected-author-info">
+                    <p><strong>Name:</strong> {author}</p>
+                    <p><strong>Email:</strong> {authorEmail}</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          
+          <div className="form-field">
             <label htmlFor="title">Title</label>
             <input 
               required 
@@ -89,28 +178,6 @@ function AddManuscriptForm({
               value={title} 
               onChange={(e) => setTitle(e.target.value)}
               ref={titleInputRef}
-            />
-          </div>
-          
-          <div className="form-field">
-            <label htmlFor="author">Author Name</label>
-            <input 
-              required 
-              type="text" 
-              id="author" 
-              value={author} 
-              onChange={(e) => setAuthor(e.target.value)}
-            />
-          </div>
-          
-          <div className="form-field">
-            <label htmlFor="authorEmail">Author Email</label>
-            <input 
-              required 
-              type="email" 
-              id="authorEmail" 
-              value={authorEmail} 
-              onChange={(e) => setAuthorEmail(e.target.value)}
             />
           </div>
           
@@ -139,7 +206,7 @@ function AddManuscriptForm({
         
         <div className="form-actions">
           <button type="button" onClick={cancel}>Cancel</button>
-          <button type="submit">Submit</button>
+          <button type="submit" disabled={!selectedAuthorId}>Submit</button>
         </div>
       </form>
     </div>
