@@ -11,8 +11,9 @@ const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
 const USERS_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
 const USER_DELETE_ENDPOINT = `${BACKEND_URL}/user/delete`;
 const USER_UPDATE_ENDPOINT = `${BACKEND_URL}/user/update`;
-const ROLES_READ_ENDPOINT = `${BACKEND_URL}/roles/read`;
-const ROLES_ENDPOINT = `${BACKEND_URL}/roles`;
+const ROLES_READ_ENDPOINT = `${BACKEND_URL}/roles`;
+// Remove the unused ROLES_ENDPOINT variable
+// const ROLES_ENDPOINT = `${BACKEND_URL}/roles`;
 // Helper function to convert role codes to display names
 const getRoleDisplayName = (roleCode, roles) => roles[roleCode] || roleCode;
 
@@ -275,15 +276,6 @@ function AddUserForm({
           </div>
         </div>
         
-        <div className="HATEOAS Roles">
-          <label htmlFor="roles" className = "form-label">Roles</label>
-          <select required className="form-select" name="roles" onChange={handleRoleChange}>
-            {Object.keys(roleOptions).map((code) => (
-              <option key = {code} value = {code}>{roleOptions[code]}</option>
-            ))}
-          </select>
-        </div>
-
         <div className="roles-container">
           <h4>Select Roles</h4>
           <div className="roles-checkboxes">
@@ -538,12 +530,24 @@ function Users() {
   const [isLoading, setIsLoading] = useState(true);
   const [isOperationLoading, setIsOperationLoading] = useState(false);
   const [roles, setRoles] = useState({});
-  const [roleMap, setRoleMap] = useState({});
+  
   const fetchRoles = async () => {
     try {
+      console.log('Fetching roles from:', ROLES_READ_ENDPOINT);
       const { data } = await axios.get(ROLES_READ_ENDPOINT);
-      setRoles(data.roles || {});
+      console.log('Roles response:', data);
+      
+      // Handle the roles data directly (no nested 'roles' property in the response)
+      // Remove the 'string' key if it exists as it's not a valid role
+      const roleData = { ...data };
+      if ('string' in roleData) {
+        delete roleData.string;
+      }
+      
+      setRoles(roleData);
+      console.log('Processed roles:', roleData);
     } catch (error) {
+      console.error('Error fetching roles:', error);
       setError(`There was a problem retrieving the roles. ${error}`);
     }
   };
@@ -560,21 +564,6 @@ function Users() {
       setIsLoading(false);
     }
   };
-
-  const getRoles = () => {
-    axios.get(ROLES_ENDPOINT)
-      .then(({data}) => {
-        setRoleMap(data);
-      })
-      .catch((error) => {
-        if(error.response && error.response.data && error.roles){
-          setError(`error: ${error.response.data.message}`);
-        }
-        else {
-          setError(`error`)
-        }
-      });
-  }
 
   const deleteUser = async (email) => {
     if (!email) return;
@@ -686,7 +675,6 @@ function Users() {
             setError={setError}
             setIsOperationLoading={setIsOperationLoading}
             roles={roles}
-            roleOptions={roleMap}
           />
           
           {editingUser && (
