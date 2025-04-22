@@ -1,43 +1,213 @@
-/* Center content */
+/* Base container */
 .home-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 80vh;
-    text-align: center;
-    background-color: #f9f9f9; /* Light background */
-  }
-  
-  /* Journal title */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+  background-color: #f9f9f9;
+}
+
+/* Header section */
+.home-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  max-width: 800px;
+}
+
+/* Journal title */
+.journal-title {
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #2d2d2d;
+  margin-bottom: 1rem;
+}
+
+/* Journal description */
+.journal-description {
+  font-size: 1.2rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Section headers */
+.navigation-section h2,
+.activity-section h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+/* Navigation section */
+.navigation-section {
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 3rem;
+}
+
+/* Navigation cards container */
+.navigation-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Navigation card */
+.navigation-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.navigation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Navigation card icon */
+.nav-card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Navigation card title */
+.navigation-card h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #2d2d2d;
+}
+
+/* Navigation card description */
+.navigation-card p {
+  font-size: 1rem;
+  color: #666;
+}
+
+/* Activity section */
+.activity-section {
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Activity cards container */
+.activity-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Activity card */
+.activity-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Activity card title */
+.activity-card h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #2d2d2d;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+/* Activity list */
+.activity-card ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.activity-card li {
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-card li:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+/* Activity links */
+.activity-card a {
+  color: #0056b3;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  flex: 1;
+}
+
+.activity-card a:hover {
+  color: #003d7a;
+  text-decoration: underline;
+}
+
+/* Activity date */
+.activity-date {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+/* Empty message */
+.empty-message {
+  color: #777;
+  font-style: italic;
+  margin: 1rem 0;
+}
+
+/* Loading indicator */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Error message */
+.error-message {
+  margin-top: 20px;
+  padding: 10px;
+  color: #b30000;
+  background-color: #ffdede;
+  border: 1px solid #b30000;
+  border-radius: 5px;
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .journal-title {
-    font-size: 2.8rem;
-    font-weight: bold;
-    color: #2d2d2d;
-    margin-bottom: 10px;
+    font-size: 2.2rem;
   }
   
-  /* Journal description */
   .journal-description {
-    font-size: 1.2rem;
-    color: #555;
-    max-width: 60%;
-    line-height: 1.6;
+    font-size: 1rem;
   }
   
-  /* Error message */
-  .error-message {
-    margin-top: 20px;
-    padding: 10px;
-    color: #b30000;
-    background-color: #ffdede;
-    border: 1px solid #b30000;
-    border-radius: 5px;
+  .navigation-cards,
+  .activity-cards {
+    grid-template-columns: 1fr;
   }
-  
-  .home-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
+}
