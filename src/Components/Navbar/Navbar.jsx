@@ -7,6 +7,7 @@ export const PAGES = [
   { label: 'About', destination: '/about' },
   { label: 'View All Users', destination: '/users' },
   { label: 'View All Manuscripts', destination: '/manuscripts' },
+  { label: 'Login', destination: '/login'}
 ];
 
 function NavLink({ page }) {

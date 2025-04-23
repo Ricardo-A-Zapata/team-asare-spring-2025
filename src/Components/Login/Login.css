@@ -1,0 +1,29 @@
+.login-container {
+    text-align: center;
+}
+
+.login-container .modal form{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-style: solid;
+    padding: 1rem;
+    gap: 3vh;
+}
+.login-container .modal {
+    display: flex;
+    justify-content: center;
+}
+
+.login-container .modal form div.input div {
+    display: flex;
+    gap: 1vw;
+}
+
+
+.login-container .modal form div.input {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+}
