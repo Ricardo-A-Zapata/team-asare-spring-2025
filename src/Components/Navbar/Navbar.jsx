@@ -6,7 +6,6 @@ export const PAGES = [
   { label: 'Home', destination: '/' },
   { label: 'About', destination: '/about' },
   { label: 'View All Users', destination: '/users' },
-  { label: 'View All Submissions', destination: '/submissions' },
   { label: 'View All Manuscripts', destination: '/manuscripts' },
 ];
 

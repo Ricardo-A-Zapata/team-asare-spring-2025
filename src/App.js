@@ -10,7 +10,6 @@ import './App.css';
 import Home from './Components/Home'
 import Navbar from './Components/Navbar';
 import Users from './Components/Users';
-import Submissions from './Components/Submissions'; 
 import Manuscripts from './Components/Manuscripts/Manuscripts';
 import ManuscriptDetails from './Components/Manuscripts/ManuscriptDetails';
 import About from './Components/About/About';
@@ -31,7 +30,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="users" element={<Users />} />
         <Route path="users/:email" element={<UserPage />} />
-        <Route path="submissions" element={<Submissions />} />
         <Route path="manuscripts" element={<Manuscripts />} />
         <Route path="manuscripts/:id" element={<ManuscriptDetails />} />
         <Route path="about" element={<About />} />

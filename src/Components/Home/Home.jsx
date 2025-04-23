@@ -8,11 +8,9 @@ import './Home.css';
 
 const JOURNAL_NAME_ENDPOINT = `${BACKEND_URL}/journalname`;
 const RECENT_MANUSCRIPTS_ENDPOINT = `${BACKEND_URL}/manuscripts/recent`;
-const RECENT_SUBMISSIONS_ENDPOINT = `${BACKEND_URL}/submissions/recent`;
 
-// Fallback endpoints if the dedicated recent endpoints don't exist
+// Fallback endpoint if the dedicated recent endpoint doesn't exist
 const ALL_MANUSCRIPTS_ENDPOINT = `${BACKEND_URL}/manuscripts`;
-const ALL_SUBMISSIONS_ENDPOINT = `${BACKEND_URL}/submissions/read`;
 
 // Helper function to convert manuscripts object to array
 function manuscriptsToArray(manuscripts) {
@@ -83,7 +81,6 @@ NavigationCard.propTypes = {
 function Home() {
   const [journalName, setJournalName] = useState('');
   const [recentManuscripts, setRecentManuscripts] = useState([]);
-  const [recentSubmissions, setRecentSubmissions] = useState([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -129,41 +126,6 @@ function Home() {
             // Don't set an error state, just continue with empty manuscripts
           }
         }
-        
-        // Try to fetch recent submissions
-        try {
-          // First try the dedicated endpoint for recent submissions
-          const submissionsResponse = await axios.get(RECENT_SUBMISSIONS_ENDPOINT);
-          if (submissionsResponse.data && submissionsResponse.data.submissions) {
-            setRecentSubmissions(submissionsResponse.data.submissions.slice(0, 5));
-          }
-        } catch (error) {
-          console.warn("Dedicated recent submissions endpoint not available, trying fallback:", error);
-          
-          // Fallback: try to get all submissions and sort them ourselves
-          try {
-            const allSubmissionsResponse = await axios.get(ALL_SUBMISSIONS_ENDPOINT);
-            if (allSubmissionsResponse.data && allSubmissionsResponse.data.Submissions) {
-              // Convert from object to array if needed
-              let submissions = allSubmissionsResponse.data.Submissions;
-              if (!Array.isArray(submissions) && typeof submissions === 'object') {
-                submissions = Object.values(submissions);
-              }
-              
-              // Sort by date (if available) and take the 5 most recent
-              submissions.sort((a, b) => {
-                const dateA = new Date(a.date || a.updatedAt || a.createdAt || 0);
-                const dateB = new Date(b.date || b.updatedAt || b.createdAt || 0);
-                return dateB - dateA; // Sort descending (newest first)
-              });
-              
-              setRecentSubmissions(submissions.slice(0, 5));
-            }
-          } catch (fallbackError) {
-            console.warn("Could not fetch submissions:", fallbackError);
-            // Don't set an error state, just continue with empty submissions
-          }
-        }
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("There was a problem loading the homepage data.");
@@ -178,7 +140,6 @@ function Home() {
   // Simple icons using unicode or text (can be replaced with actual icons)
   const icons = {
     users: "👥",
-    submissions: "📝",
     manuscripts: "📄",
     about: "ℹ️"
   };
@@ -206,12 +167,6 @@ function Home() {
                 linkTo="/users" 
               />
               <NavigationCard 
-                title="Submissions" 
-                description="Track and manage paper submissions" 
-                icon={icons.submissions}
-                linkTo="/submissions" 
-              />
-              <NavigationCard 
                 title="Manuscripts" 
                 description="Browse all manuscripts in the system" 
                 icon={icons.manuscripts}
@@ -234,12 +189,6 @@ function Home() {
                 items={recentManuscripts} 
                 emptyMessage="No recent manuscripts. Submit a new manuscript to see it here."
                 linkPrefix="/manuscripts" 
-              />
-              <ActivityCard 
-                title="Recent Submissions" 
-                items={recentSubmissions} 
-                emptyMessage="No recent submissions"
-                linkPrefix="/submissions" 
               />
             </div>
           </div>
