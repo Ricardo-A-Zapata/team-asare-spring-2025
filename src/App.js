@@ -16,7 +16,7 @@ import About from './Components/About/About';
 import UserPage from './Components/UserPage/UserPage';
 import Login from './Components/Login/Login';
 import Signup from './Components/Signup/Signup';
-
+import ProtectedRoute from './Components/ProtectedRoute/ProtectRoute';
 // Helper function to convert role codes to display names
 
 
@@ -29,13 +29,41 @@ function App() {
         <Route index element={<Login />} /> */}
         {/* Index route for home */}
         <Route path="/" element={<Home />} />
-        <Route path="users" element={<Users />} />
-        <Route path="users/:email" element={<UserPage />} />
-        <Route path="manuscripts" element={<Manuscripts />} />
-        <Route path="manuscripts/:id" element={<ManuscriptDetails />} />
         <Route path="about" element={<About />} />
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
+        <Route
+          path="users"
+          element={
+            <ProtectedRoute>
+              <Users />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="users/:email"
+          element={
+            <ProtectedRoute>
+              <UserPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="manuscripts"
+          element={
+            <ProtectedRoute>
+              <Manuscripts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="manuscripts/:id"
+          element={
+            <ProtectedRoute>
+              <ManuscriptDetails />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
