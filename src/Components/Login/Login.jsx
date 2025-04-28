@@ -7,6 +7,12 @@ import React from 'react'
 
 const Login = () => {
   const navigate = useNavigate();
+  const handleLogout = (e) => {
+    e.preventDefault();
+    localStorage.setItem("loggedIn", "false");
+    localStorage.setItem("email", "");
+    window.location.reload();
+  }
   async function handleSubmit (e) {
     e.preventDefault();
     const email = e.target?.elements?.email?.value;
@@ -40,6 +46,8 @@ const Login = () => {
                 <button type="submit">Submit</button>
             </form>
         </div>
+        {localStorage.getItem("loggedIn") === "true" && <button className="Logout" onClick={handleLogout}>Logout</button>}
+        
     </div>
   )
 }
