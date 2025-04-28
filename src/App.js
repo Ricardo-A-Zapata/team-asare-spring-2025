@@ -15,6 +15,7 @@ import ManuscriptDetails from './Components/Manuscripts/ManuscriptDetails';
 import About from './Components/About/About';
 import UserPage from './Components/UserPage/UserPage';
 import Login from './Components/Login/Login';
+import Signup from './Components/Signup/Signup';
 
 // Helper function to convert role codes to display names
 
@@ -34,6 +35,7 @@ function App() {
         <Route path="manuscripts/:id" element={<ManuscriptDetails />} />
         <Route path="about" element={<About />} />
         <Route path="login" element={<Login />} />
+        <Route path="signup" element={<Signup />} />
       </Routes>
     </BrowserRouter>
   );
