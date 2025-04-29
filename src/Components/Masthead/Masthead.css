@@ -1,0 +1,158 @@
+.masthead-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.masthead-section {
+  margin-bottom: 3rem;
+}
+
+.masthead-section h1 {
+  color: var(--bistre, #2d2d2d);
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.masthead-section h2 {
+  color: var(--bistre, #2d2d2d);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--cambridge-blue, #4285f4);
+  padding-bottom: 0.5rem;
+}
+
+.masthead-section h3 {
+  color: var(--bistre, #2d2d2d);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.masthead-section p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Masthead header with edit button */
+.masthead-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.masthead-header h1 {
+  margin: 0;
+  color: var(--bistre, #2d2d2d);
+}
+
+.edit-button {
+  background-color: var(--cambridge-blue, #4285f4);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: auto;
+  min-width: 80px;
+  max-width: 120px;
+  justify-content: center;
+}
+
+.edit-button::before {
+  content: "✏️";
+  font-size: 0.9rem;
+}
+
+.edit-button:hover {
+  background-color: var(--bistre, #2d2d2d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.edit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Masthead Specific Styles */
+.masthead .role-section {
+  margin-bottom: 2.5rem;
+}
+
+.editors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.editor-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.editor-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.editor-card h4 {
+  color: var(--bistre, #2d2d2d);
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.editor-card p {
+  margin: 0.25rem 0;
+  font-size: 1rem;
+}
+
+.editor-card .title {
+  color: var(--cambridge-blue, #4285f4);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+/* Introduction section specific styles */
+.introduction {
+  max-width: 800px;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .masthead-container {
+    padding: 1rem;
+  }
+
+  .editors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .masthead-section h1 {
+    font-size: 2rem;
+  }
+
+  .masthead-section h2 {
+    font-size: 1.75rem;
+  }
+  
+  .masthead-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+} 

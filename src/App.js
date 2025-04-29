@@ -17,6 +17,7 @@ import UserPage from './Components/UserPage/UserPage';
 import Login from './Components/Login/Login';
 import Signup from './Components/Signup/Signup';
 import ProtectedRoute from './Components/ProtectedRoute/ProtectRoute';
+import Masthead from './Components/Masthead';
 // Helper function to convert role codes to display names
 
 
@@ -64,6 +65,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="masthead" element={<Masthead />} />
       </Routes>
     </BrowserRouter>
   );
