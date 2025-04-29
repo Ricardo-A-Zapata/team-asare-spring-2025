@@ -7,8 +7,6 @@ export const PAGES = [
   { label: 'About', destination: '/about' },
   { label: 'View All Users', destination: '/users' },
   { label: 'View All Manuscripts', destination: '/manuscripts' },
-  { label: 'Login', destination: '/login'},
-  { label: 'Sign up', destination: '/signup'},
 ];
 
 function NavLink({ page }) {
@@ -27,10 +25,26 @@ NavLink.propTypes = {
 };
 
 function Navbar() {
+  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+  
   return (
     <nav>
       <ul className="wrapper">
         {PAGES.map((page) => <NavLink key={page.destination} page={page} />)}
+        <NavLink 
+          page={{ 
+            label: isLoggedIn ? 'Account' : 'Login', 
+            destination: '/login'
+          }} 
+        />
+        {!isLoggedIn && (
+          <NavLink 
+            page={{ 
+              label: 'Sign up', 
+              destination: '/signup'
+            }} 
+          />
+        )}
       </ul>
     </nav>
   );

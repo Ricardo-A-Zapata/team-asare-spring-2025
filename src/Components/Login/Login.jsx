@@ -2,13 +2,32 @@ import { BACKEND_URL } from '../../constants';
 import { useNavigate } from 'react-router-dom';
 import './Login.css'
 import axios from 'axios';
-
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 const Login = () => {
   const navigate = useNavigate();
   const isLoggedIn = localStorage.getItem("loggedIn") === "true";
   const userEmail = localStorage.getItem("email");
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserInfo();
+    }
+  }, [isLoggedIn]);
+
+  const fetchUserInfo = async () => {
+    try {
+      const { data } = await axios.get(`${BACKEND_URL}/user/read`);
+      const users = Object.values(data.Users);
+      const currentUser = users.find(user => user.email === userEmail);
+      if (currentUser) {
+        setUserInfo(currentUser);
+      }
+    } catch (err) {
+      console.error('Failed to fetch user info:', err);
+    }
+  };
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -21,7 +40,6 @@ const Login = () => {
     e.preventDefault();
     const email = e.target?.elements?.email?.value;
     const password = e.target?.elements?.password?.value;
-    console.log(email, password);
     try {
       await axios.post(`${BACKEND_URL}login`, {email, password});
       localStorage.setItem("loggedIn", "true");
@@ -37,12 +55,17 @@ const Login = () => {
     <div className="login-container">
       {isLoggedIn ? (
         <div className="user-info">
-          <h1>Welcome, {userEmail}</h1>
-          <p>You are currently logged in</p>
+          <h1>Welcome, {userInfo?.name || 'User'} ({userEmail})</h1>
+          {userInfo && (
+            <div className="user-details">
+              <p><strong>Affiliation:</strong> {userInfo.affiliation || 'Not provided'}</p>
+              <p><strong>Roles:</strong> {userInfo.roleCodes?.join(', ') || userInfo.roles?.join(', ') || 'Not provided'}</p>
+            </div>
+          )}
           <button className="logout-button" onClick={handleLogout}>Logout</button>
         </div>
       ) : (
-        <>
+        <div className="login-form">
           <h1>Login</h1>
           <div className="modal">
             <form onSubmit={handleSubmit}>
@@ -56,10 +79,10 @@ const Login = () => {
                   <input type="password" name="password" placeholder='Password123' />
                 </div>
               </div>
-              <button type="submit">Submit</button>
+              <button type="submit">Login</button>
             </form>
           </div>
-        </>
+        </div>
       )}
     </div>
   )
