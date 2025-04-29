@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
+import { useAuth } from '../../AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 import { BACKEND_URL } from '../../constants';
+import './AddManuscriptForm.css';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
@@ -10,107 +13,72 @@ const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEN
 const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscript/create`;
 const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
 
-function AddManuscriptForm({
-  visible,
-  cancel,
-  fetchManuscripts,
-  setError,
-  setIsOperationLoading
-}) {
+function AddManuscriptForm() {
   const [title, setTitle] = useState('');
-  const [author, setAuthor] = useState('');
-  const [authorEmail, setAuthorEmail] = useState('');
   const [abstract, setAbstract] = useState('');
   const [text, setText] = useState('');
-  const [authors, setAuthors] = useState([]);
-  const [isLoadingAuthors, setIsLoadingAuthors] = useState(false);
-  const [selectedAuthorId, setSelectedAuthorId] = useState('');
+  const [userInfo, setUserInfo] = useState(null);
+  const [guestAuthor, setGuestAuthor] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestAffiliation, setGuestAffiliation] = useState('');
+  const [error, setError] = useState('');
+  const [isOperationLoading, setIsOperationLoading] = useState(false);
   const titleInputRef = useRef(null);
-  const authorSelectRef = useRef(null);
+  const { userEmail } = useAuth();
+  const navigate = useNavigate();
 
-  // Focus the author select when the form becomes visible
+  // Focus the title input when the form becomes visible
   useEffect(() => {
-    if (visible && authorSelectRef.current) {
+    if (titleInputRef.current) {
       setTimeout(() => {
-        authorSelectRef.current.focus();
+        titleInputRef.current.focus();
       }, 100);
     }
-  }, [visible, isLoadingAuthors]);
+  }, []);
 
-  // Fetch users with the AU role when the form becomes visible
+  // Fetch user info if user is logged in
   useEffect(() => {
-    if (visible) {
-      fetchAuthors();
+    if (userEmail) {
+      fetchUserInfo();
     }
-  }, [visible]);
+  }, [userEmail]);
 
-  const fetchAuthors = async () => {
+  const fetchUserInfo = async () => {
     try {
-      setIsLoadingAuthors(true);
-      // First get all users
-      const usersResponse = await axios.get(USERS_READ_ENDPOINT);
-      if (usersResponse.data && usersResponse.data.Users) {
-        // Convert from object to array if needed
-        let users = usersResponse.data.Users;
-        if (!Array.isArray(users) && typeof users === 'object') {
-          users = Object.values(users);
+      const { data } = await axios.get(USERS_READ_ENDPOINT);
+      if (data && data.Users) {
+        const users = Object.values(data.Users);
+        const currentUser = users.find(user => user.email === userEmail);
+        if (currentUser) {
+          setUserInfo(currentUser);
+        } else {
+          setError('Could not find user information. Please try again later.');
         }
-        
-        // Filter users with the 'AU' role
-        const authorUsers = users.filter(user => {
-          // Check in both roleCodes and roles arrays for backward compatibility
-          const roleCodes = user.roleCodes || [];
-          const roles = user.roles || [];
-          return roleCodes.includes('AU') || roles.includes('AU');
-        });
-        
-        // Sort authors by name for easier selection
-        authorUsers.sort((a, b) => a.name.localeCompare(b.name));
-        
-        setAuthors(authorUsers);
       }
     } catch (error) {
-      console.error('Error fetching authors:', error);
-      setError('Could not load authors. Please try again later.');
-    } finally {
-      setIsLoadingAuthors(false);
-    }
-  };
-
-  const handleAuthorChange = (e) => {
-    const authorId = e.target.value;
-    setSelectedAuthorId(authorId);
-    
-    if (authorId) {
-      const selectedAuthor = authors.find(a => a.email === authorId);
-      if (selectedAuthor) {
-        setAuthor(selectedAuthor.name);
-        setAuthorEmail(selectedAuthor.email);
-        
-        // Focus on the title field after selecting an author
-        if (titleInputRef.current) {
-          titleInputRef.current.focus();
-        }
-      }
-    } else {
-      // Clear author fields if no selection
-      setAuthor('');
-      setAuthorEmail('');
+      console.error('Error fetching user info:', error);
+      setError('Could not load user information. Please try again later.');
     }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     
-    if (!title || !author || !authorEmail || !abstract || !text) {
-      setError('All fields are required');
+    if (!title || !abstract || !text) {
+      setError('Title, abstract, and text are required');
+      return;
+    }
+
+    if (!userInfo && (!guestAuthor || !guestEmail)) {
+      setError('Author name and email are required for guest submissions');
       return;
     }
     
     const newManuscript = {
       title,
-      author,
-      author_email: authorEmail,
+      author: userInfo ? userInfo.name : guestAuthor,
+      author_email: userInfo ? userInfo.email : guestEmail,
+      author_affiliation: userInfo ? userInfo.affiliation : guestAffiliation,
       abstract,
       text,
       state: "SUBMITTED"
@@ -122,16 +90,10 @@ function AddManuscriptForm({
       console.log('Manuscript data:', newManuscript);
       const response = await axios.put(MANUSCRIPT_CREATE_ENDPOINT, newManuscript);
       console.log('Server response:', response);
-      await fetchManuscripts();
-      // Reset form
-      setTitle('');
-      setAuthor('');
-      setAuthorEmail('');
-      setAbstract('');
-      setText('');
-      setSelectedAuthorId('');
-      // Close form
-      cancel();
+      
+      // Show success message and redirect
+      alert('Manuscript submitted successfully!');
+      navigate('/');
     } catch (error) {
       console.error('Full error object:', error);
       console.error('Error response:', error.response);
@@ -142,59 +104,68 @@ function AddManuscriptForm({
     }
   };
 
-  if (!visible) return null;
-  
   return (
     <div className="form-container">
-      <h3>Submit New Manuscript</h3>
+      <h3>
+        Submit New Manuscript
+        {!userInfo && <span className="guest-badge">Guest Submission</span>}
+      </h3>
       
       <form onSubmit={handleSubmit} className="manuscript-form">
         <div className="form-fields">
-          <div className="form-field">
-            <label htmlFor="authorSelect">Select Author</label>
-            {isLoadingAuthors ? (
-              <div className="loading-text">Loading available authors...</div>
-            ) : (
-              <>
-                {authors.length > 0 ? (
-                  <>
-                    <select
-                      id="authorSelect"
-                      value={selectedAuthorId}
-                      onChange={handleAuthorChange}
-                      required
-                      ref={authorSelectRef}
-                    >
-                      <option value="">-- Select an Author --</option>
-                      {authors.map((author) => (
-                        <option key={author.email} value={author.email}>
-                          {author.name} ({author.email})
-                        </option>
-                      ))}
-                    </select>
-                    
-                    {selectedAuthorId ? (
-                      <div className="selected-author-info">
-                        <p><strong>Name:</strong> {author}</p>
-                        <p><strong>Email:</strong> {authorEmail}</p>
-                      </div>
-                    ) : (
-                      <div className="author-selection-help">
-                        Please select an author who will be credited for this manuscript.
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="no-authors-message">
-                    No authors found. Users must have the Author (AU) role to appear here.
-                  </div>
+          {userInfo ? (
+            <div className="form-field">
+              <label>Author Information (Logged In)</label>
+              <div className="selected-author-info">
+                <p><strong>Name:</strong> {userInfo.name}</p>
+                <p><strong>Email:</strong> {userInfo.email}</p>
+                {userInfo.affiliation && (
+                  <p><strong>Affiliation:</strong> {userInfo.affiliation}</p>
                 )}
-              </>
-            )}
-          </div>
+              </div>
+            </div>
+          ) : (
+            <div className="form-field">
+              <label>Author Information (Guest Submission)</label>
+              <div className="guest-author-fields">
+                <div className="form-field">
+                  <label htmlFor="guestAuthor">Name *</label>
+                  <input
+                    type="text"
+                    id="guestAuthor"
+                    value={guestAuthor}
+                    onChange={(e) => setGuestAuthor(e.target.value)}
+                    required
+                    placeholder="Enter your name"
+                  />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="guestEmail">Email *</label>
+                  <input
+                    type="email"
+                    id="guestEmail"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    required
+                    placeholder="Enter your email"
+                  />
+                </div>
+                <div className="form-field">
+                  <label htmlFor="guestAffiliation">Affiliation (Optional)</label>
+                  <input
+                    type="text"
+                    id="guestAffiliation"
+                    value={guestAffiliation}
+                    onChange={(e) => setGuestAffiliation(e.target.value)}
+                    placeholder="Enter your affiliation"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           
           <div className="form-field">
-            <label htmlFor="title">Title</label>
+            <label htmlFor="title">Title *</label>
             <input 
               required 
               type="text" 
@@ -207,7 +178,7 @@ function AddManuscriptForm({
           </div>
           
           <div className="form-field">
-            <label htmlFor="abstract">Abstract</label>
+            <label htmlFor="abstract">Abstract *</label>
             <textarea 
               required 
               id="abstract" 
@@ -219,7 +190,7 @@ function AddManuscriptForm({
           </div>
           
           <div className="form-field">
-            <label htmlFor="text">Manuscript Text</label>
+            <label htmlFor="text">Manuscript Text *</label>
             <textarea 
               required 
               id="text" 
@@ -231,14 +202,16 @@ function AddManuscriptForm({
           </div>
         </div>
         
+        {error && <div className="error-message">{error}</div>}
+        
         <div className="form-actions">
-          <button type="button" onClick={cancel}>Cancel</button>
+          <button type="button" onClick={() => navigate('/')}>Cancel</button>
           <button 
             type="submit" 
-            disabled={!selectedAuthorId}
-            title={!selectedAuthorId ? "Please select an author first" : "Submit manuscript"}
+            disabled={isOperationLoading}
+            title="Submit manuscript"
           >
-            Submit
+            {isOperationLoading ? 'Submitting...' : 'Submit'}
           </button>
         </div>
       </form>

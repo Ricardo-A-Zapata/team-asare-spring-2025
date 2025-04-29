@@ -13,6 +13,7 @@ import Navbar from './Components/Navbar';
 import Users from './Components/Users';
 import Manuscripts from './Components/Manuscripts/Manuscripts';
 import ManuscriptDetails from './Components/Manuscripts/ManuscriptDetails';
+import AddManuscriptForm from './Components/Manuscripts/AddManuscriptForm';
 import About from './Components/About/About';
 import UserPage from './Components/UserPage/UserPage';
 import Login from './Components/Login/Login';
@@ -35,6 +36,7 @@ function App() {
           <Route path="about" element={<About />} />
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<Signup />} />
+          <Route path="submit-manuscript" element={<AddManuscriptForm />} />
           <Route
             path="users"
             element={

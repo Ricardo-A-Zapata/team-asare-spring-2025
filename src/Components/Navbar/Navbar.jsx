@@ -7,6 +7,9 @@ export const PAGES = [
   { label: 'Home', destination: '/' },
   { label: 'About', destination: '/about' },
   { label: 'Masthead', destination: '/masthead' },
+];
+
+export const PROTECTED_PAGES = [
   { label: 'View All Users', destination: '/users' },
   { label: 'View All Manuscripts', destination: '/manuscripts' },
 ];
@@ -33,19 +36,17 @@ function Navbar() {
     <nav>
       <ul className="wrapper">
         {PAGES.map((page) => <NavLink key={page.destination} page={page} />)}
-        <NavLink 
-          page={{ 
-            label: isLoggedIn ? 'Account' : 'Login', 
-            destination: '/login'
-          }} 
-        />
-        {!isLoggedIn && (
-          <NavLink 
-            page={{ 
-              label: 'Sign up', 
-              destination: '/signup'
-            }} 
-          />
+        {isLoggedIn ? (
+          <>
+            {PROTECTED_PAGES.map((page) => <NavLink key={page.destination} page={page} />)}
+            <NavLink page={{ label: 'Account', destination: '/login' }} />
+          </>
+        ) : (
+          <>
+            <NavLink page={{ label: 'Submit Manuscript', destination: '/submit-manuscript' }} />
+            <NavLink page={{ label: 'Login', destination: '/login' }} />
+            <NavLink page={{ label: 'Sign up', destination: '/signup' }} />
+          </>
         )}
       </ul>
     </nav>
