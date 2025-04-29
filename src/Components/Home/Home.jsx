@@ -4,13 +4,17 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 import { BACKEND_URL } from '../../constants';
+import AboutEdit from '../About/AboutEdit';
 import './Home.css';
 
-const JOURNAL_NAME_ENDPOINT = `${BACKEND_URL}/journalname`;
-const RECENT_MANUSCRIPTS_ENDPOINT = `${BACKEND_URL}/manuscripts/recent`;
+// Remove trailing slash if present to ensure proper URL formation
+const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+const JOURNAL_NAME_ENDPOINT = `${backendUrl}/journalname`;
+const RECENT_MANUSCRIPTS_ENDPOINT = `${backendUrl}/manuscripts/recent`;
+const TEXT_READ_ENDPOINT = `${backendUrl}/text/read/HomePage`;
 
 // Fallback endpoint if the dedicated recent endpoint doesn't exist
-const ALL_MANUSCRIPTS_ENDPOINT = `${BACKEND_URL}/manuscripts`;
+const ALL_MANUSCRIPTS_ENDPOINT = `${backendUrl}/manuscripts`;
 
 // Helper function to convert manuscripts object to array
 function manuscriptsToArray(manuscripts) {
@@ -83,6 +87,9 @@ function Home() {
   const [recentManuscripts, setRecentManuscripts] = useState([]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [homeContent, setHomeContent] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,6 +99,17 @@ function Home() {
         const journalResponse = await axios.get(JOURNAL_NAME_ENDPOINT);
         if (journalResponse.data && journalResponse.data["Journal Name"]) {
           setJournalName(journalResponse.data["Journal Name"]);
+        }
+        
+        // Fetch home page content
+        try {
+          const contentResponse = await axios.get(TEXT_READ_ENDPOINT);
+          if (contentResponse.data && contentResponse.data.Content) {
+            setHomeContent(contentResponse.data.Content);
+          }
+        } catch (contentError) {
+          console.error('Error fetching home content:', contentError);
+          // If there's an error, we'll use the static content
         }
         
         // Try to fetch recent manuscripts
@@ -144,6 +162,29 @@ function Home() {
     about: "ℹ️"
   };
 
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = (updatedContent) => {
+    setHomeContent(updatedContent);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return <AboutEdit 
+      content={homeContent} 
+      textKey="HomePage"
+      onSave={handleSave} 
+      onCancel={handleCancel}
+      titleEditable={false}
+    />;
+  }
+
   return (
     <div className="home-container">
       {isLoading ? (
@@ -151,10 +192,17 @@ function Home() {
       ) : (
         <>
           <div className="home-header">
-            <h1 className="journal-title">Welcome to {journalName || 'our Journal'}</h1>
-            <p className="journal-description">
-              This is the official journal website where scholars and researchers share their work.
-            </p>
+            <div>
+              <h1 className="journal-title">Welcome to {journalName || 'our Journal'}</h1>
+              <p className="journal-description">
+                {homeContent?.text || 'This is the official journal website where scholars and researchers share their work.'}
+              </p>
+            </div>
+            {isLoggedIn && (
+              <button className="edit-button" onClick={handleEditClick}>
+                Edit Home Page
+              </button>
+            )}
           </div>
 
           <div className="navigation-section">

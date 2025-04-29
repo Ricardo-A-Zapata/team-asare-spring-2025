@@ -13,6 +13,54 @@
   text-align: center;
   margin-bottom: 2.5rem;
   max-width: 800px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+.home-header > div {
+  text-align: left;
+  flex: 1;
+}
+
+/* Edit button */
+.edit-button {
+  background-color: var(--cambridge-blue, #4285f4);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  width: auto;
+  min-width: 80px;
+  max-width: 120px;
+  justify-content: center;
+}
+
+.edit-button::before {
+  content: "✏️";
+  font-size: 0.9rem;
+}
+
+.edit-button:hover {
+  background-color: var(--bistre, #2d2d2d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.edit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Journal title */
@@ -209,5 +257,15 @@
   .navigation-cards,
   .activity-cards {
     grid-template-columns: 1fr;
+  }
+  
+  .home-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .home-header > div {
+    text-align: center;
+    width: 100%;
   }
 }
