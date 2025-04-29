@@ -1,32 +1,82 @@
 .login-container {
-    text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 2vh;
-}
-
-.login-container .modal form{
-    display: flex;
-    justify-content: center;
     align-items: center;
-    flex-direction: column;
-    border-style: solid;
-    padding: 1rem;
-    gap: 3vh;
-}
-.login-container .modal {
-    display: flex;
     justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
 }
 
-.login-container .modal form div.input div {
-    display: flex;
-    gap: 1vw;
+.modal {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
 }
 
-
-.login-container .modal form div.input {
+.input {
     display: flex;
     flex-direction: column;
-    gap: 1.5vh;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.email-input,
+.password-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+input {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+button {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.user-info {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+.user-info h1 {
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.user-info p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.logout-button {
+    background-color: #dc3545;
+}
+
+.logout-button:hover {
+    background-color: #c82333;
 }

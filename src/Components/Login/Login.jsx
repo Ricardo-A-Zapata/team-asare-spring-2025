@@ -7,12 +7,16 @@ import React from 'react'
 
 const Login = () => {
   const navigate = useNavigate();
+  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+  const userEmail = localStorage.getItem("email");
+
   const handleLogout = (e) => {
     e.preventDefault();
     localStorage.setItem("loggedIn", "false");
     localStorage.setItem("email", "");
     window.location.reload();
   }
+
   async function handleSubmit (e) {
     e.preventDefault();
     const email = e.target?.elements?.email?.value;
@@ -28,10 +32,19 @@ const Login = () => {
       alert('Login Failed\n' + err?.response?.data?.message );
     }
   } 
+
   return (
     <div className="login-container">
-        <h1>Login</h1>
-        <div className="modal">
+      {isLoggedIn ? (
+        <div className="user-info">
+          <h1>Welcome, {userEmail}</h1>
+          <p>You are currently logged in</p>
+          <button className="logout-button" onClick={handleLogout}>Logout</button>
+        </div>
+      ) : (
+        <>
+          <h1>Login</h1>
+          <div className="modal">
             <form onSubmit={handleSubmit}>
               <div className='input'>
                 <div className="email-input">
@@ -43,11 +56,11 @@ const Login = () => {
                   <input type="password" name="password" placeholder='Password123' />
                 </div>
               </div>
-                <button type="submit">Submit</button>
+              <button type="submit">Submit</button>
             </form>
-        </div>
-        {localStorage.getItem("loggedIn") === "true" && <button className="Logout" onClick={handleLogout}>Logout</button>}
-        
+          </div>
+        </>
+      )}
     </div>
   )
 }
