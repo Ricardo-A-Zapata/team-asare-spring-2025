@@ -483,20 +483,22 @@ function User({ user, onDelete, onEdit, isOperationLoading, roles }) {
           </p>
         )}
       </Link>
-      <button 
-        type="button" 
-        onClick={handleDelete}
-        disabled={isOperationLoading}
-      >
-        Delete
-      </button>
-      <button 
-        type="button" 
-        onClick={handleEdit}
-        disabled={isOperationLoading}
-      >
-        Edit
-      </button>
+      <div className="button-group">
+        <button 
+          type="button" 
+          onClick={handleDelete}
+          disabled={isOperationLoading}
+        >
+          Delete
+        </button>
+        <button 
+          type="button" 
+          onClick={handleEdit}
+          disabled={isOperationLoading}
+        >
+          Edit
+        </button>
+      </div>
     </div>
   );
 }

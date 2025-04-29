@@ -311,3 +311,101 @@
     width: 100%;
   }
 }
+
+/* Styles for the user container buttons (Delete and Edit) */
+.user-container button {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+  height: auto;
+  width: auto;
+  transition: background-color 0.2s;
+  margin-left: 8px;
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  color: #333;
+}
+
+.user-container button:hover {
+  background-color: #e5e5e5;
+}
+
+/* Style for the "Delete" button */
+.user-container button:first-of-type {
+  background-color: #ffeeee;
+  border: 1px solid #ffcccc;
+  color: #cc0000;
+}
+
+.user-container button:first-of-type:hover {
+  background-color: #ffdddd;
+}
+
+/* Style for the "Add a User" button in header */
+header button {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #0066cc;
+  border: 1px solid #0055aa;
+  color: white;
+  height: auto;
+  width: auto;
+  transition: background-color 0.2s;
+}
+
+header button:hover {
+  background-color: #0055aa;
+}
+
+/* User container styles */
+.user-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+.user-container a {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+}
+
+.user-container h2 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.user-container p {
+  margin: 0.3rem 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.user-container .button-group {
+  display: flex;
+  gap: 6px;
+}
+
+/* Header styles */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: #333;
+}
