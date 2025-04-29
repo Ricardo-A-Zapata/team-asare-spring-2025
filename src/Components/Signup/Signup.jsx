@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
 import propTypes from 'prop-types';
+import { useAuth } from '../../AuthContext';
 
 import { BACKEND_URL } from '../../constants';
 const USERS_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
@@ -11,6 +12,8 @@ function AddUserForm({
     roles
   }) {
     const navigate = useNavigate();
+    const { login } = useAuth();
+    
     const addUser = async (e) => {
       e.preventDefault();
       const chosenRoles = [];
@@ -31,8 +34,7 @@ function AddUserForm({
         };
       try {
         await axios.put(USERS_CREATE_ENDPOINT, newUser);
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("email", e.target?.elements?.email?.value);
+        login(e.target?.elements?.email?.value);
         navigate('/');
       }
       catch (error) {

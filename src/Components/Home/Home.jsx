@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import propTypes from 'prop-types';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../AuthContext';
 
 import { BACKEND_URL } from '../../constants';
 import AboutEdit from '../About/AboutEdit';
@@ -89,7 +90,7 @@ function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [homeContent, setHomeContent] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+  const { isLoggedIn } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {

@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css'
 import axios from 'axios';
 import React, { useState, useEffect } from 'react'
+import { useAuth } from '../../AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-  const userEmail = localStorage.getItem("email");
+  const { isLoggedIn, userEmail, login, logout } = useAuth();
   const [userInfo, setUserInfo] = useState(null);
 
   useEffect(() => {
@@ -31,9 +31,8 @@ const Login = () => {
 
   const handleLogout = (e) => {
     e.preventDefault();
-    localStorage.setItem("loggedIn", "false");
-    localStorage.setItem("email", "");
-    window.location.reload();
+    logout();
+    navigate('/');
   }
 
   async function handleSubmit (e) {
@@ -42,8 +41,7 @@ const Login = () => {
     const password = e.target?.elements?.password?.value;
     try {
       await axios.post(`${BACKEND_URL}login`, {email, password});
-      localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("email", email);
+      login(email);
       navigate('/');
     }
     catch (err) {

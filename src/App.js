@@ -6,6 +6,7 @@ import {
 } from 'react-router-dom';
 
 import './App.css';
+import { AuthProvider } from './AuthContext';
 
 import Home from './Components/Home'
 import Navbar from './Components/Navbar';
@@ -23,51 +24,53 @@ import Masthead from './Components/Masthead';
 
 function App() {
   return (
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        {/* For a different home page, do:
-        <Route index element={<Login />} /> */}
-        {/* Index route for home */}
-        <Route path="/" element={<Home />} />
-        <Route path="about" element={<About />} />
-        <Route path="login" element={<Login />} />
-        <Route path="signup" element={<Signup />} />
-        <Route
-          path="users"
-          element={
-            <ProtectedRoute>
-              <Users />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="users/:email"
-          element={
-            <ProtectedRoute>
-              <UserPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="manuscripts"
-          element={
-            <ProtectedRoute>
-              <Manuscripts />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="manuscripts/:id"
-          element={
-            <ProtectedRoute>
-              <ManuscriptDetails />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="masthead" element={<Masthead />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Navbar />
+        <Routes>
+          {/* For a different home page, do:
+          <Route index element={<Login />} /> */}
+          {/* Index route for home */}
+          <Route path="/" element={<Home />} />
+          <Route path="about" element={<About />} />
+          <Route path="login" element={<Login />} />
+          <Route path="signup" element={<Signup />} />
+          <Route
+            path="users"
+            element={
+              <ProtectedRoute>
+                <Users />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="users/:email"
+            element={
+              <ProtectedRoute>
+                <UserPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="manuscripts"
+            element={
+              <ProtectedRoute>
+                <Manuscripts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="manuscripts/:id"
+            element={
+              <ProtectedRoute>
+                <ManuscriptDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="masthead" element={<Masthead />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import propTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../AuthContext';
 
 export const PAGES = [
   { label: 'Home', destination: '/' },
@@ -26,7 +27,7 @@ NavLink.propTypes = {
 };
 
 function Navbar() {
-  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+  const { isLoggedIn } = useAuth();
   
   return (
     <nav>

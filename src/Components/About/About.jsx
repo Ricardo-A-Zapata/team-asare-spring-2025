@@ -3,6 +3,7 @@ import axios from 'axios';
 import { BACKEND_URL } from '../../constants';
 import AboutEdit from './AboutEdit';
 import './About.css';
+import { useAuth } from '../../AuthContext';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
@@ -15,7 +16,7 @@ function About() {
   const [content, setContent] = useState(null);
   const [missionContent, setMissionContent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+  const { isLoggedIn } = useAuth();
 
   useEffect(() => {
     const fetchContent = async () => {
