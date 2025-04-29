@@ -4,26 +4,38 @@
   padding: 2rem;
 }
 
+.about-hero {
+  margin-bottom: 4rem;
+  position: relative;
+}
+
+.about-content {
+  max-width: 800px;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #333;
+}
+
 .about-section {
   margin-bottom: 3rem;
 }
 
 .about-section h1 {
-  color: var(--bistre);
+  color: var(--bistre, #2d2d2d);
   font-size: 2.5rem;
   margin-bottom: 1.5rem;
 }
 
 .about-section h2 {
-  color: var(--bistre);
+  color: var(--bistre, #2d2d2d);
   font-size: 2rem;
   margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--cambridge-blue);
+  border-bottom: 2px solid var(--cambridge-blue, #4285f4);
   padding-bottom: 0.5rem;
 }
 
 .about-section h3 {
-  color: var(--bistre);
+  color: var(--bistre, #2d2d2d);
   font-size: 1.5rem;
   margin-bottom: 1rem;
 }
@@ -34,46 +46,173 @@
   color: #333;
 }
 
-/* Masthead Specific Styles */
-.masthead .role-section {
-  margin-bottom: 2.5rem;
+/* About page header with edit button */
+.about-header, .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
-.editors-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin-top: 1rem;
+.about-header h1 {
+  margin: 0;
+  color: var(--bistre, #2d2d2d);
+  font-size: 2.5rem;
 }
 
-.editor-card {
-  background-color: white;
-  border-radius: 8px;
-  padding: 1.5rem;
+.section-header {
+  border-bottom: 2px solid var(--cambridge-blue, #4285f4);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+  margin: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.edit-button {
+  background-color: var(--cambridge-blue, #4285f4);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: auto;
+  min-width: 80px;
+  max-width: 120px;
+  justify-content: center;
 }
 
-.editor-card:hover {
+.edit-button::before {
+  content: "✏️";
+  font-size: 0.9rem;
+}
+
+.edit-button:hover {
+  background-color: var(--bistre, #2d2d2d);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.editor-card h4 {
-  color: var(--bistre);
-  font-size: 1.25rem;
-  margin: 0 0 0.5rem 0;
+.edit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.editor-card p {
-  margin: 0.25rem 0;
-  font-size: 1rem;
+/* Mission section styles */
+.mission-section {
+  background-color: #f9f9f9;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.editor-card .title {
-  color: var(--cambridge-blue);
+.mission-content {
+  max-width: 800px;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #333;
+}
+
+.mission-section .section-header {
+  margin-bottom: 1.5rem;
+}
+
+/* Edit form styles */
+.about-edit-container {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.about-edit-container h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--bistre, #2d2d2d);
+}
+
+.about-edit-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.about-edit-form label {
+  display: block;
+  margin-bottom: 0.5rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  color: #333;
+}
+
+.about-edit-form input,
+.about-edit-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.about-edit-form textarea {
+  resize: vertical;
+  min-height: 200px;
+}
+
+.about-edit-form .error-message {
+  color: #d32f2f;
+  margin-bottom: 1rem;
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 4px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.form-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.form-actions .cancel-button {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.form-actions .cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+.form-actions .save-button {
+  background-color: var(--cambridge-blue, #4285f4);
+  color: white;
+}
+
+.form-actions .save-button:hover {
+  background-color: var(--bistre, #2d2d2d);
+}
+
+.form-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* Responsive adjustments */
@@ -82,15 +221,29 @@
     padding: 1rem;
   }
 
-  .editors-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .about-section h1 {
+  .about-section h1, .about-header h1 {
     font-size: 2rem;
   }
 
-  .about-section h2 {
+  .about-section h2, .section-header h2 {
     font-size: 1.75rem;
+  }
+  
+  .about-header, .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .form-actions button {
+    width: 100%;
+  }
+  
+  .mission-section {
+    padding: 1.5rem 1rem;
   }
 } 

@@ -1,79 +1,137 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { BACKEND_URL } from '../../constants';
+import AboutEdit from './AboutEdit';
 import './About.css';
 
+// Remove trailing slash if present to ensure proper URL formation
+const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+const TEXT_READ_ENDPOINT = `${backendUrl}/text/read/AboutPage`;
+const TEXT_READ_MISSION_ENDPOINT = `${backendUrl}/text/read/MissionPage`;
+
 function About() {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editSection, setEditSection] = useState(null); // 'main', 'mission'
+  const [content, setContent] = useState(null);
+  const [missionContent, setMissionContent] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        setIsLoading(true);
+        // Fetch main about content
+        try {
+          const response = await axios.get(TEXT_READ_ENDPOINT);
+          if (response.data && response.data.Content) {
+            setContent(response.data.Content);
+          }
+        } catch (error) {
+          console.error('Error fetching about content:', error);
+          // If there's an error, we'll use the static content
+        }
+
+        // Fetch mission statement content
+        try {
+          const missionResponse = await axios.get(TEXT_READ_MISSION_ENDPOINT);
+          if (missionResponse.data && missionResponse.data.Content) {
+            setMissionContent(missionResponse.data.Content);
+          }
+        } catch (error) {
+          console.error('Error fetching mission content:', error);
+          // If there's an error, we'll use the static content
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, []);
+
+  const handleEditClick = (section) => {
+    setEditSection(section);
+    setIsEditing(true);
+  };
+
+  const handleSave = (updatedContent) => {
+    if (editSection === 'main') {
+      setContent(updatedContent);
+    } else if (editSection === 'mission') {
+      setMissionContent(updatedContent);
+    }
+    setIsEditing(false);
+    setEditSection(null);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditSection(null);
+  };
+
+  if (isEditing) {
+    const editContent = editSection === 'main' ? content : missionContent;
+    const textKey = editSection === 'main' ? 'AboutPage' : 'MissionPage';
+    return <AboutEdit 
+      content={editContent} 
+      textKey={textKey}
+      onSave={handleSave} 
+      onCancel={handleCancel}
+      titleEditable={false}
+    />;
+  }
+
   return (
     <div className="about-container">
-      <section className="about-section">
-        <h1>About Our Journal</h1>
-        <p>
-          Welcome to our academic journal, a collaborative project by NYU students dedicated to advancing knowledge 
-          and fostering scholarly discourse in our field. Our journal serves as a platform for researchers, 
-          scholars, and practitioners to share their findings and contribute to the ongoing development of our discipline.
-        </p>
-      </section>
-
-      <section className="about-section masthead">
-        <h2>Editorial Board</h2>
+      <div className="about-hero">
+        <div className="about-header">
+          <h1>{content?.title || 'About Our Journal'}</h1>
+          {isLoggedIn && (
+            <button
+              className="edit-button"
+              onClick={() => handleEditClick('main')}
+            >
+              Edit Page
+            </button>
+          )}
+        </div>
         
-        <div className="role-section">
-          <h3>Administrators</h3>
-          <div className="editors-grid">
-            <div className="editor-card admin">
-              <h4>Aayush Daftary</h4>
-              <p className="title">Lead Administrator</p>
-              <p>New York University</p>
-              <p>asd572@nyu.edu</p>
-            </div>
-            
-            <div className="editor-card admin">
-              <h4>Aurora Cruci</h4>
-              <p className="title">System Administrator</p>
-              <p>New York University</p>
-              <p>aac9988@nyu.edu</p>
-            </div>
+        {isLoading ? (
+          <p>Loading content...</p>
+        ) : (
+          <div className="about-content">
+            <p>
+              {content?.text || 
+                'Welcome to our academic journal, a collaborative project by NYU students dedicated to advancing knowledge and fostering scholarly discourse in our field. Our journal serves as a platform for researchers, scholars, and practitioners to share their findings and contribute to the ongoing development of our discipline.'}
+            </p>
           </div>
+        )}
+      </div>
+
+      <section className="about-section mission-section">
+        <div className="section-header">
+          <h2>Mission Statement</h2>
+          {isLoggedIn && (
+            <button
+              className="edit-button"
+              onClick={() => handleEditClick('mission')}
+            >
+              Edit Mission
+            </button>
+          )}
         </div>
-
-        <div className="role-section">
-          <h3>Editorial Staff</h3>
-          <div className="editors-grid">
-            <div className="editor-card">
-              <h4>Eli Edme</h4>
-              <p className="title">Editor</p>
-              <p>New York University</p>
-              <p>eae8374@nyu.edu</p>
-            </div>
-
-            <div className="editor-card">
-              <h4>Ricky Zapata</h4>
-              <p className="title">Editor</p>
-              <p>New York University</p>
-              <p>raz6675@nyu.edu</p>
-            </div>
+        
+        {isLoading ? (
+          <p>Loading mission statement...</p>
+        ) : (
+          <div className="mission-content">
+            <p>
+              {missionContent?.text || 
+                'Our mission is to publish high-quality, peer-reviewed research that contributes to the advancement of knowledge in our field. We are committed to maintaining the highest standards of academic integrity and providing a platform for diverse perspectives and innovative research.'}
+            </p>
           </div>
-        </div>
-
-        <div className="role-section">
-          <h3>Referees</h3>
-          <div className="editors-grid">
-            <div className="editor-card referee">
-              <h4>Sam Huppert</h4>
-              <p className="title">Lead Referee</p>
-              <p>New York University</p>
-              <p>sjh9967@nyu.edu</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="about-section">
-        <h2>Mission Statement</h2>
-        <p>
-          Our mission is to publish high-quality, peer-reviewed research that contributes to the advancement 
-          of knowledge in our field. We are committed to maintaining the highest standards of academic 
-          integrity and providing a platform for diverse perspectives and innovative research.
-        </p>
+        )}
       </section>
     </div>
   );
