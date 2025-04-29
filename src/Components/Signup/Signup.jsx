@@ -62,7 +62,7 @@ function AddUserForm({
               <input required type="email" id="email" />
             </div>
             <div className="form-field">
-              <label htmlFor="password">password</label>
+              <label htmlFor="password">Password</label>
               <input required type="password" id="password" />
             </div>
             
@@ -75,16 +75,20 @@ function AddUserForm({
           <div className="roles-container">
             <h4>Select Roles</h4>
             <div className="roles-checkboxes">
-              {Object.entries(roles).map(([code, displayName]) => (
-                <div key={code} className="role-checkbox">
-                  <input
-                    type="checkbox"
-                    id={`role-${code}`}
-                    value={code}
-                  />
-                  <label htmlFor={`role-${code}`}>{displayName}</label>
-                </div>
-              ))}
+              {Object.entries(roles)
+                .filter(([code]) => code === 'AU') // Only show Author role
+                .map(([code, displayName]) => (
+                  <div key={code} className="role-checkbox">
+                    <input
+                      type="checkbox"
+                      id={`role-${code}`}
+                      value={code}
+                      defaultChecked={true} // Automatically check the Author role
+                      disabled // Disable the checkbox since it's the only option
+                    />
+                    <label htmlFor={`role-${code}`}>{displayName}</label>
+                  </div>
+                ))}
             </div>
           </div>
           
