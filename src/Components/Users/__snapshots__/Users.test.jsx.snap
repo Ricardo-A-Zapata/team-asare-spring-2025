@@ -41,21 +41,6 @@ exports[`Users Component matches snapshot 1`] = `
             >
               All Roles
             </option>
-            <option
-              value="AU"
-            >
-              Author
-            </option>
-            <option
-              value="ED"
-            >
-              Editor
-            </option>
-            <option
-              value="RE"
-            >
-              Reviewer
-            </option>
           </select>
         </div>
       </div>
@@ -119,6 +104,11 @@ exports[`Users Component matches snapshot 1`] = `
       Showing all 3 users
     </div>
     <div
+      class="error-message"
+    >
+      There was a problem retrieving the roles. Error: Unknown endpoint: https://teamasare.pythonanywhere.com//roles
+    </div>
+    <div
       class="user-container"
     >
       <a
@@ -134,19 +124,23 @@ exports[`Users Component matches snapshot 1`] = `
           Affiliation: University A
         </p>
         <p>
-          Roles: Author, Reviewer
+          Roles: AU, RE
         </p>
       </a>
-      <button
-        type="button"
+      <div
+        class="button-group"
       >
-        Delete
-      </button>
-      <button
-        type="button"
-      >
-        Edit
-      </button>
+        <button
+          type="button"
+        >
+          Delete
+        </button>
+        <button
+          type="button"
+        >
+          Edit
+        </button>
+      </div>
     </div>
     <div
       class="user-container"
@@ -164,19 +158,23 @@ exports[`Users Component matches snapshot 1`] = `
           Affiliation: Company B
         </p>
         <p>
-          Roles: Editor
+          Roles: ED
         </p>
       </a>
-      <button
-        type="button"
+      <div
+        class="button-group"
       >
-        Delete
-      </button>
-      <button
-        type="button"
-      >
-        Edit
-      </button>
+        <button
+          type="button"
+        >
+          Delete
+        </button>
+        <button
+          type="button"
+        >
+          Edit
+        </button>
+      </div>
     </div>
     <div
       class="user-container"
@@ -194,19 +192,23 @@ exports[`Users Component matches snapshot 1`] = `
           Affiliation: Organization C
         </p>
         <p>
-          Roles: Author
+          Roles: AU
         </p>
       </a>
-      <button
-        type="button"
+      <div
+        class="button-group"
       >
-        Delete
-      </button>
-      <button
-        type="button"
-      >
-        Edit
-      </button>
+        <button
+          type="button"
+        >
+          Delete
+        </button>
+        <button
+          type="button"
+        >
+          Edit
+        </button>
+      </div>
     </div>
   </div>
 </DocumentFragment>

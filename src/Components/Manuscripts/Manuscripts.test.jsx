@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import Manuscripts from './Manuscripts';
 import axios from 'axios';
 import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from '../../AuthContext';
 
 jest.mock('axios');
 
@@ -38,7 +39,11 @@ describe('Manuscripts Component', () => {
   });
 
   const renderWithRouter = (ui) => {
-    return render(<BrowserRouter>{ui}</BrowserRouter>);
+    return render(
+      <AuthProvider>
+        <BrowserRouter>{ui}</BrowserRouter>
+      </AuthProvider>
+    );
   };
 
   test('displays loading message initially', async () => {

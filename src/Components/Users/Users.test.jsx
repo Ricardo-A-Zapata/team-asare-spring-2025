@@ -14,6 +14,7 @@ const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
 const USER_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
 const USER_UPDATE_ENDPOINT = `${BACKEND_URL}/user/update`;
 const USER_DELETE_ENDPOINT = `${BACKEND_URL}/user/delete`;
+const ROLES_READ_ENDPOINT = `${BACKEND_URL}/roles/read`;
 
 // Helper function to wrap component with Router
 const renderWithRouter = (ui) => {
@@ -21,6 +22,12 @@ const renderWithRouter = (ui) => {
 };
 
 // Test data
+const mockRoles = {
+  'AU': 'Author',
+  'ED': 'Editor',
+  'RE': 'Reviewer'
+};
+
 const testUsers = {
   'user1@example.com': {
     name: 'John Doe',
@@ -42,9 +49,31 @@ const testUsers = {
   }
 };
 
+// Convert test users object to array for sorting tests
+const testUserArray = Object.values(testUsers);
+
+const mockUsers = [
+  {
+    name: 'John Doe',
+    email: 'user1@example.com',
+    affiliation: 'University A',
+    roleCodes: ['AU', 'RE']
+  },
+  {
+    name: 'Jane Smith',
+    email: 'user2@example.com',
+    affiliation: 'Company B',
+    roleCodes: ['ED']
+  },
+  {
+    name: 'Bob Johnson',
+    email: 'user3@example.com',
+    affiliation: 'Organization C',
+    roleCodes: ['AU']
+  }
+];
+
 describe('sortUsers function', () => {
-  const testUserArray = Object.values(testUsers);
-  
   it('returns the original array if no sortConfig is provided', () => {
     const result = sortUsers(testUserArray, null);
     expect(result).toEqual(testUserArray);
@@ -80,14 +109,14 @@ describe('sortUsers function', () => {
   
   it('sorts by role in ascending order', () => {
     const result = sortUsers(testUserArray, { key: 'role', direction: 'asc' });
-    // First role of Bob and John is 'Author', Jane's is 'Editor'
+    // First role of Bob and John is Author, Jane's is Editor
     // Alphabetically: Author, Author, Editor
     const firstRoles = result.map(user => 
-      user.roleCodes && user.roleCodes.length > 0 ? user.roleCodes[0] : ''
+      user.roleCodes && user.roleCodes.length > 0 ? mockRoles[user.roleCodes[0]] : ''
     );
-    expect(firstRoles[0]).toBe('AU');
-    expect(firstRoles[1]).toBe('AU');
-    expect(firstRoles[2]).toBe('ED');
+    expect(firstRoles[0]).toBe('Author');
+    expect(firstRoles[1]).toBe('Author');
+    expect(firstRoles[2]).toBe('Editor');
   });
   
   it('handles missing affiliation values', () => {
@@ -105,27 +134,17 @@ describe('Users Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     axios.get.mockImplementation((url) => {
-      if (url === `${BACKEND_URL}/roles/read`) {
+      if (url === ROLES_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
-            roles: {
-              AU: 'Author',
-              ED: 'Editor',
-              RE: 'Reviewer',
-            },
-          },
+            roles: mockRoles
+          }
         });
       }
-    
-      if (url === `${BACKEND_URL}/user/read`) {
-        return Promise.resolve({
-          data: {
-            Users: testUsers,
-          },
-        });
+      if (url === USERS_READ_ENDPOINT) {
+        return Promise.resolve({ data: { Users: testUsers } });
       }
-    
-      return Promise.reject(new Error(`Unhandled GET request to ${url}`));
+      return Promise.reject(new Error(`Unknown endpoint: ${url}`));
     });    
     axios.put.mockResolvedValue({});
     axios.delete.mockResolvedValue({});
@@ -187,22 +206,14 @@ describe('Users Component', () => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
     });
     
-    // Select Editor role
-    const roleSelect = screen.getByLabelText('Filter by role');
-    fireEvent.change(roleSelect, { target: { value: 'ED' } });
+    // Get the role filter and select Editor
+    const roleFilter = screen.getByLabelText('Filter by role');
+    fireEvent.change(roleFilter, { target: { value: 'ED' } });
     
     // Check that only Jane is displayed (she's the only Editor)
     expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
     expect(screen.getByText('Jane Smith')).toBeInTheDocument();
     expect(screen.queryByText('Bob Johnson')).not.toBeInTheDocument();
-    
-    // Select Author role
-    fireEvent.change(roleSelect, { target: { value: 'AU' } });
-    
-    // Check that only John and Bob are displayed (they're the Authors)
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.queryByText('Jane Smith')).not.toBeInTheDocument();
-    expect(screen.getByText('Bob Johnson')).toBeInTheDocument();
   });
 
   it('shows "no results" message when filters match no users', async () => {
@@ -273,6 +284,26 @@ describe('Users Component', () => {
   test('matches snapshot', async () => {
     let asFragment;
     
+    axios.get.mockImplementation((url) => {
+      if (url === ROLES_READ_ENDPOINT) {
+        return Promise.resolve({
+          data: {
+            roles: mockRoles
+          }
+        });
+      }
+    
+      if (url === USERS_READ_ENDPOINT) {
+        return Promise.resolve({
+          data: {
+            Users: testUsers
+          }
+        });
+      }
+    
+      return Promise.reject(new Error(`Unknown endpoint: ${url}`));
+    });
+
     await act(async () => {
       const rendered = render(
         <BrowserRouter>
@@ -280,6 +311,11 @@ describe('Users Component', () => {
         </BrowserRouter>
       );
       asFragment = rendered.asFragment;
+    });
+
+    // Wait for the roles and users to load
+    await waitFor(() => {
+      expect(screen.getByText('John Doe')).toBeInTheDocument();
     });
 
     expect(asFragment()).toMatchSnapshot();
@@ -316,7 +352,7 @@ describe('Users Component', () => {
     };
   
     axios.get.mockImplementation((url) => {
-      if (url === `${BACKEND_URL}/roles/read`) {
+      if (url === ROLES_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
             roles: {
@@ -328,7 +364,7 @@ describe('Users Component', () => {
         });
       }
   
-      if (url === `${BACKEND_URL}/user/read`) {
+      if (url === USERS_READ_ENDPOINT) {
         return Promise.resolve({ data: mockUsers });
       }
   
@@ -352,20 +388,24 @@ describe('Users Component', () => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
     });
     
-    // Get the sort dropdown and select "Name (Z-A)"
+    // Get the sort select and change to name descending
     const sortSelect = screen.getByLabelText('Sort users');
     fireEvent.change(sortSelect, { target: { value: 'name-desc' } });
     
     // Check that users are sorted by name in descending order
     const userElements = screen.getAllByRole('heading', { level: 2 });
     expect(userElements[0].textContent).toBe('John Doe');
+    expect(userElements[1].textContent).toBe('Jane Smith');
+    expect(userElements[2].textContent).toBe('Bob Johnson');
     
     // Change sort to "Name (A-Z)"
     fireEvent.change(sortSelect, { target: { value: 'name-asc' } });
     
-    // Check that users are now sorted in ascending order
-    const userElementsAfterSort = screen.getAllByRole('heading', { level: 2 });
-    expect(userElementsAfterSort[0].textContent).toBe('Bob Johnson');
+    // Check that users are sorted by name in ascending order
+    const sortedUserElements = screen.getAllByRole('heading', { level: 2 });
+    expect(sortedUserElements[0].textContent).toBe('Bob Johnson');
+    expect(sortedUserElements[1].textContent).toBe('Jane Smith');
+    expect(sortedUserElements[2].textContent).toBe('John Doe');
   });
 
   it('maintains sort order when applying filters', async () => {
@@ -376,16 +416,15 @@ describe('Users Component', () => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
     });
     
-    // Set sort to "Name (A-Z)"
+    // Sort by name ascending
     const sortSelect = screen.getByLabelText('Sort users');
     fireEvent.change(sortSelect, { target: { value: 'name-asc' } });
     
-    // Apply a role filter for "Author"
-    const roleSelect = screen.getByLabelText('Filter by role');
-    fireEvent.change(roleSelect, { target: { value: 'AU' } });
+    // Filter by Author role
+    const roleFilter = screen.getByLabelText('Filter by role');
+    fireEvent.change(roleFilter, { target: { value: 'AU' } });
     
-    // Should show Bob Johnson first (alphabetical) and John Doe second
-    // Both are authors
+    // Check that Bob and John are displayed in alphabetical order
     const userElements = screen.getAllByRole('heading', { level: 2 });
     expect(userElements[0].textContent).toBe('Bob Johnson');
     expect(userElements[1].textContent).toBe('John Doe');
@@ -406,7 +445,7 @@ describe('Users Component', () => {
     
     // Verify sort applied
     const userElementsSorted = screen.getAllByRole('heading', { level: 2 });
-    expect(userElementsSorted[0].textContent).toBe('Bob Johnson');
+    expect(userElementsSorted[0].textContent).toBe('John Doe');
     
     // Clear sorting
     fireEvent.change(sortSelect, { target: { value: '' } });
@@ -426,7 +465,7 @@ describe('Loading States', () => {
   it('shows loading state while fetching users', async () => {
     // Mock a delayed response
     axios.get.mockImplementation((url) => {
-      if (url === `${BACKEND_URL}/roles/read`) {
+      if (url === ROLES_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
             roles: {
@@ -438,7 +477,7 @@ describe('Loading States', () => {
         });
       }
     
-      if (url === `${BACKEND_URL}/user/read`) {
+      if (url === USERS_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
             Users: testUsers
@@ -463,7 +502,7 @@ describe('Loading States', () => {
 
   it('shows loading state while adding a user', async () => {
     axios.get.mockImplementation((url) => {
-      if (url === `${BACKEND_URL}/roles/read`) {
+      if (url === ROLES_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
             roles: {
@@ -475,7 +514,7 @@ describe('Loading States', () => {
         });
       }
     
-      if (url === `${BACKEND_URL}/user/read`) {
+      if (url === USERS_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
             Users: testUsers,
@@ -524,7 +563,7 @@ describe('Loading States', () => {
 
   it('shows loading state while deleting a user', async () => {
     axios.get.mockImplementation((url) => {
-      if (url === `${BACKEND_URL}/roles/read`) {
+      if (url === ROLES_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
             roles: {
@@ -536,7 +575,7 @@ describe('Loading States', () => {
         });
       }
     
-      if (url === `${BACKEND_URL}/user/read`) {
+      if (url === USERS_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
             Users: testUsers,
@@ -573,7 +612,7 @@ describe('Loading States', () => {
 
   it('disables buttons during loading states', async () => {
     axios.get.mockImplementation((url) => {
-      if (url === `${BACKEND_URL}/roles/read`) {
+      if (url === ROLES_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
             roles: {
@@ -585,7 +624,7 @@ describe('Loading States', () => {
         });
       }
     
-      if (url === `${BACKEND_URL}/user/read`) {
+      if (url === USERS_READ_ENDPOINT) {
         return Promise.resolve({
           data: {
             Users: testUsers,

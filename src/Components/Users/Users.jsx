@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import propTypes from 'prop-types';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -34,47 +34,40 @@ const filterUsers = (users, filters) => {
     const matchesRole = !selectedRole || 
       (user.roleCodes && user.roleCodes.includes(selectedRole));
     
-    // Return user only if they match all applied filters
     return matchesSearchTerm && matchesRole;
   });
 };
 
 // New function for sorting users
-const sortUsers = (users, sortConfig) => {
-  if (!sortConfig || !sortConfig.key) return users;
+const sortUsers = (users, sortCriteria) => {
+  if (!sortCriteria) return users;
+  
+  const { key, direction } = sortCriteria;
   
   return [...users].sort((a, b) => {
-    // Handle sorting by primary role
-    if (sortConfig.key === 'role') {
-      const aRoles = a.roleCodes && a.roleCodes.length > 0 ? a.roleCodes : (a.roles || []);
-      const bRoles = b.roleCodes && b.roleCodes.length > 0 ? b.roleCodes : (b.roles || []);
-      
-      // Get display names of first roles (or empty string if no roles)
-      const aRole = aRoles.length > 0 ? getRoleDisplayName(aRoles[0], sortConfig.roles || {}) : '';
-      const bRole = bRoles.length > 0 ? getRoleDisplayName(bRoles[0], sortConfig.roles || {}) : '';      
-      
-      return sortConfig.direction === 'asc' 
-        ? aRole.localeCompare(bRole)
-        : bRole.localeCompare(aRole);
+    let comparison = 0;
+    
+    switch (key) {
+      case 'name':
+        comparison = a.name.localeCompare(b.name);
+        break;
+      case 'email':
+        comparison = a.email.localeCompare(b.email);
+        break;
+      case 'affiliation':
+        comparison = (a.affiliation || '').localeCompare(b.affiliation || '');
+        break;
+      case 'role':
+        // Sort by first role code if available
+        const aRole = a.roleCodes && a.roleCodes.length > 0 ? a.roleCodes[0] : '';
+        const bRole = b.roleCodes && b.roleCodes.length > 0 ? b.roleCodes[0] : '';
+        comparison = aRole.localeCompare(bRole);
+        break;
+      default:
+        comparison = 0;
     }
     
-    // Handle sorting by affiliation (which might be undefined)
-    if (sortConfig.key === 'affiliation') {
-      const aAffiliation = a.affiliation || '';
-      const bAffiliation = b.affiliation || '';
-      
-      return sortConfig.direction === 'asc'
-        ? aAffiliation.localeCompare(bAffiliation)
-        : bAffiliation.localeCompare(aAffiliation);
-    }
-    
-    // Handle default case (name and email)
-    const aValue = a[sortConfig.key];
-    const bValue = b[sortConfig.key];
-    
-    return sortConfig.direction === 'asc'
-      ? aValue.localeCompare(bValue)
-      : bValue.localeCompare(aValue);
+    return direction === 'asc' ? comparison : -comparison;
   });
 };
 
@@ -450,50 +443,29 @@ ErrorMessage.propTypes = {
 };
 
 function User({ user, onDelete, onEdit, isOperationLoading, roles }) {
-  const { name, email, affiliation, roles: userRoles, roleCodes } = user;
-  const handleDelete = () => 
-  {
-    if (window.confirm(`Are you sure you want to delete ${name}?`)) {
-      onDelete(email);
-    }
-  };
-  const handleEdit = () => 
-  {
-    onEdit(user);
-  };
-
-  // Determine which roles to display, prioritizing roleCodes if available
-  const displayRoles = roleCodes && roleCodes.length > 0 ? roleCodes : userRoles;
-
   return (
     <div className="user-container">
-      <Link to={email}>
-        <h2>{name}</h2>
+      <Link to={`/${user.email}`}>
+        <h2>{user.name}</h2>
+        <p>Email: {user.email}</p>
+        <p>Affiliation: {user.affiliation}</p>
         <p>
-          Email: {email}
+          Roles: {user.roleCodes && user.roleCodes.length > 0
+            ? user.roleCodes.map(code => roles[code] || code).join(', ')
+            : 'No roles assigned'}
         </p>
-        {affiliation && (
-          <p>
-            Affiliation: {affiliation}
-          </p>
-        )}
-        {displayRoles && displayRoles.length > 0 && (
-          <p>
-            Roles: {displayRoles.map(role => getRoleDisplayName(role, roles)).join(', ')}
-          </p>
-        )}
       </Link>
       <div className="button-group">
         <button 
           type="button" 
-          onClick={handleDelete}
+          onClick={() => onDelete(user.email)}
           disabled={isOperationLoading}
         >
           Delete
         </button>
         <button 
           type="button" 
-          onClick={handleEdit}
+          onClick={() => onEdit(user)}
           disabled={isOperationLoading}
         >
           Edit
@@ -639,6 +611,13 @@ function Users() {
   // Sort the filtered users based on current sort configuration
   const sortedUsers = sortConfig ? sortUsers(filteredUsers, sortConfig) : filteredUsers;
 
+  const displayUsers = useMemo(() => {
+    // First filter the users
+    const filteredUsers = filterUsers(users, { searchTerm: filters.searchTerm, selectedRole: filters.selectedRole });
+    // Then sort the filtered results if sortConfig is provided
+    return sortConfig ? sortUsers(filteredUsers, sortConfig) : filteredUsers;
+  }, [users, filters.searchTerm, filters.selectedRole, sortConfig]);
+
   return (
     <div className="wrapper">
       {isLoading ? (
@@ -693,8 +672,8 @@ function Users() {
           
           {error && <ErrorMessage message={error} />}
           
-          {sortedUsers.length > 0 ? (
-            sortedUsers.map((user) => (
+          {displayUsers.length > 0 ? (
+            displayUsers.map((user) => (
               <User 
                 key={user.email}
                 user={user} 
