@@ -10,9 +10,10 @@ import './Home.css';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-const JOURNAL_NAME_ENDPOINT = `${backendUrl}/journalname`;
 const RECENT_MANUSCRIPTS_ENDPOINT = `${backendUrl}/manuscripts/recent`;
 const TEXT_READ_ENDPOINT = `${backendUrl}/text/read/HomePage`;
+const TEXT_UPDATE_ENDPOINT = `${backendUrl}/text/update`;
+const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
 
 // Fallback endpoint if the dedicated recent endpoint doesn't exist
 const ALL_MANUSCRIPTS_ENDPOINT = `${backendUrl}/manuscripts`;
@@ -84,42 +85,102 @@ NavigationCard.propTypes = {
 };
 
 function Home() {
-  const [journalName, setJournalName] = useState('');
   const [recentManuscripts, setRecentManuscripts] = useState([]);
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [homeContent, setHomeContent] = useState(null);
+  const [homeContent, setHomeContent] = useState({
+    title: 'Welcome to the ASARE journal',
+    text: 'Sign up to submit a manuscript.'
+  });
   const [isEditing, setIsEditing] = useState(false);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, userEmail } = useAuth();
+  const [isEditor, setIsEditor] = useState(false);
 
+  // Check if user is an editor
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
+    let isMounted = true;
+    
+    const checkIfEditor = async () => {
+      if (!isLoggedIn || !userEmail) {
+        if (isMounted) setIsEditor(false);
+        return;
+      }
+      
       try {
-        // Fetch journal name
-        const journalResponse = await axios.get(JOURNAL_NAME_ENDPOINT);
-        if (journalResponse.data && journalResponse.data["Journal Name"]) {
-          setJournalName(journalResponse.data["Journal Name"]);
+        const response = await axios.get(USERS_READ_ENDPOINT);
+        if (!isMounted) return;
+        
+        if (response.data && response.data.Users) {
+          const users = Object.values(response.data.Users);
+          const currentUser = users.find(user => user.email === userEmail);
+          
+          if (currentUser && currentUser.roleCodes) {
+            const hasEditorRole = currentUser.roleCodes.includes('ED');
+            console.log('Current user:', userEmail);
+            console.log('User roles:', currentUser.roleCodes);
+            console.log('Has editor role:', hasEditorRole);
+            
+            if (isMounted) setIsEditor(hasEditorRole);
+          } else {
+            if (isMounted) setIsEditor(false);
+            console.log('User not found or has no roles');
+          }
         }
+      } catch (error) {
+        console.error('Error checking editor status:', error);
+        if (isMounted) setIsEditor(false);
+      }
+    };
+    
+    checkIfEditor();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [isLoggedIn, userEmail]);
+
+  // Fetch home content and manuscripts
+  useEffect(() => {
+    let isMounted = true;
+    
+    const fetchData = async () => {
+      try {
+        if (isMounted) setIsLoading(true);
         
         // Fetch home page content
         try {
-          const contentResponse = await axios.get(TEXT_READ_ENDPOINT);
-          if (contentResponse.data && contentResponse.data.Content) {
-            setHomeContent(contentResponse.data.Content);
+          const homeContentResponse = await axios.get(TEXT_READ_ENDPOINT);
+          if (!isMounted) return;
+          
+          if (homeContentResponse.data && homeContentResponse.data.Content) {
+            console.log('Home content from API:', homeContentResponse.data.Content);
+            setHomeContent(homeContentResponse.data.Content);
+          } else {
+            // Set default content if not available from API
+            console.log('Setting default home content');
+            setHomeContent({
+              title: 'Welcome to the ASARE journal',
+              text: 'Sign up to submit a manuscript.'
+            });
           }
-        } catch (contentError) {
-          console.error('Error fetching home content:', contentError);
-          // If there's an error, we'll use the static content
+        } catch (error) {
+          console.warn("Error fetching home content:", error);
+          // Set default content on error
+          if (isMounted) {
+            setHomeContent({
+              title: 'Welcome to the ASARE journal',
+              text: 'Sign up to submit a manuscript.'
+            });
+          }
         }
         
-        // Try to fetch recent manuscripts
+        // Fetch recent manuscripts
         try {
-          // First try the dedicated endpoint for recent manuscripts
-          const manuscriptsResponse = await axios.get(RECENT_MANUSCRIPTS_ENDPOINT);
-          if (manuscriptsResponse.data && manuscriptsResponse.data.manuscripts) {
-            const processedManuscripts = manuscriptsToArray(manuscriptsResponse.data.manuscripts);
-            setRecentManuscripts(processedManuscripts.slice(0, 5));
+          const recentResponse = await axios.get(RECENT_MANUSCRIPTS_ENDPOINT);
+          if (!isMounted) return;
+          
+          if (recentResponse.data && recentResponse.data.manuscripts) {
+            const processedManuscripts = manuscriptsToArray(recentResponse.data.manuscripts);
+            setRecentManuscripts(processedManuscripts);
           }
         } catch (error) {
           console.warn("Dedicated recent manuscripts endpoint not available, trying fallback:", error);
@@ -127,6 +188,8 @@ function Home() {
           // Fallback: try to get all manuscripts and sort them ourselves
           try {
             const allManuscriptsResponse = await axios.get(ALL_MANUSCRIPTS_ENDPOINT);
+            if (!isMounted) return;
+            
             if (allManuscriptsResponse.data && allManuscriptsResponse.data.manuscripts) {
               // Convert from object to array if needed
               const processedManuscripts = manuscriptsToArray(allManuscriptsResponse.data.manuscripts);
@@ -138,7 +201,7 @@ function Home() {
                 return dateB - dateA; // Sort descending (newest first)
               });
               
-              setRecentManuscripts(processedManuscripts.slice(0, 5));
+              if (isMounted) setRecentManuscripts(processedManuscripts.slice(0, 5));
             }
           } catch (fallbackError) {
             console.warn("Could not fetch manuscripts:", fallbackError);
@@ -147,13 +210,16 @@ function Home() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        setError("There was a problem loading the homepage data.");
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     fetchData();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Simple icons using unicode or text (can be replaced with actual icons)
@@ -167,9 +233,39 @@ function Home() {
     setIsEditing(true);
   };
 
-  const handleSave = (updatedContent) => {
-    setHomeContent(updatedContent);
-    setIsEditing(false);
+  const handleSave = async (updatedContent) => {
+    try {
+      setIsLoading(true);
+      
+      // Update the server with new content - using the correct format
+      await axios.put(TEXT_UPDATE_ENDPOINT, {
+        key: "HomePage",
+        title: updatedContent.title,
+        text: updatedContent.text
+      });
+      
+      // Update local state
+      setHomeContent(updatedContent);
+      
+      // Refetch to ensure we have the latest data
+      try {
+        const refreshResponse = await axios.get(TEXT_READ_ENDPOINT);
+        if (refreshResponse.data && refreshResponse.data.Content) {
+          setHomeContent(refreshResponse.data.Content);
+        }
+      } catch (refreshError) {
+        console.warn("Error refreshing content after update:", refreshError);
+        // We already updated the local state, so we can continue
+      }
+      
+    } catch (error) {
+      console.error("Error updating home content:", error);
+      console.error("Error details:", error.response || error.message);
+      alert("There was a problem saving the changes. Please try again.");
+    } finally {
+      setIsLoading(false);
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
@@ -182,7 +278,7 @@ function Home() {
       textKey="HomePage"
       onSave={handleSave} 
       onCancel={handleCancel}
-      titleEditable={false}
+      titleEditable={true}
     />;
   }
 
@@ -194,12 +290,12 @@ function Home() {
         <>
           <div className="home-header">
             <div>
-              <h1 className="journal-title">Welcome to {journalName || 'our Journal'}</h1>
+              <h1 className="journal-title">{homeContent?.title || 'Welcome to the ASARE journal'}</h1>
               <p className="journal-description">
-                {homeContent?.text || 'This is the official journal website where scholars and researchers share their work.'}
+                {homeContent?.text || 'Sign up to submit a manuscript.'}
               </p>
             </div>
-            {isLoggedIn && (
+            {isEditor && (
               <button className="edit-button" onClick={handleEditClick}>
                 Edit Home Page
               </button>
@@ -231,19 +327,18 @@ function Home() {
           </div>
 
           <div className="activity-section">
-            <h2>Recent Activity</h2>
+            <h2>Recent Manuscripts</h2>
             <div className="activity-cards">
               <ActivityCard 
-                title="Recent Manuscripts" 
+                title="Recently Submitted" 
                 items={recentManuscripts} 
-                emptyMessage="No recent manuscripts. Submit a new manuscript to see it here."
-                linkPrefix="/manuscripts" 
+                emptyMessage="No recent manuscripts" 
+                linkPrefix="/manuscripts"
               />
             </div>
           </div>
         </>
       )}
-      {error && <ErrorMessage message={error} />}
     </div>
   );
 }

@@ -8,12 +8,40 @@ import { useAuth } from '../../AuthContext';
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
 const TEXT_READ_ENDPOINT = `${backendUrl}/text/read/MastheadPage`;
+const TEXT_UPDATE_ENDPOINT = `${backendUrl}/text/update`;
+const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
 
 function Masthead() {
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, userEmail } = useAuth();
+  const [isEditor, setIsEditor] = useState(false);
+
+  useEffect(() => {
+    const checkIfEditor = async () => {
+      if (!isLoggedIn || !userEmail) {
+        setIsEditor(false);
+        return;
+      }
+      
+      try {
+        const response = await axios.get(USERS_READ_ENDPOINT);
+        if (response.data && response.data.Users) {
+          const users = Object.values(response.data.Users);
+          const currentUser = users.find(user => user.email === userEmail);
+          
+          if (currentUser && currentUser.roleCodes) {
+            setIsEditor(currentUser.roleCodes.includes('ED'));
+          }
+        }
+      } catch (error) {
+        console.error('Error checking editor status:', error);
+      }
+    };
+    
+    checkIfEditor();
+  }, [isLoggedIn, userEmail]);
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -41,9 +69,39 @@ function Masthead() {
     setIsEditing(true);
   };
 
-  const handleSave = (updatedContent) => {
-    setContent(updatedContent);
-    setIsEditing(false);
+  const handleSave = async (updatedContent) => {
+    try {
+      setIsLoading(true);
+      
+      // Update the server with new content
+      await axios.put(TEXT_UPDATE_ENDPOINT, {
+        key: "MastheadPage",
+        title: updatedContent.title,
+        text: updatedContent.text
+      });
+      
+      // Update local state
+      setContent(updatedContent);
+      
+      // Refetch to ensure we have the latest data
+      try {
+        const refreshResponse = await axios.get(TEXT_READ_ENDPOINT);
+        if (refreshResponse.data && refreshResponse.data.Content) {
+          setContent(refreshResponse.data.Content);
+        }
+      } catch (refreshError) {
+        console.warn("Error refreshing content after update:", refreshError);
+        // We already updated the local state, so we can continue
+      }
+      
+    } catch (error) {
+      console.error("Error updating masthead content:", error);
+      console.error("Error details:", error.response || error.message);
+      alert("There was a problem saving the changes. Please try again.");
+    } finally {
+      setIsLoading(false);
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
@@ -56,7 +114,7 @@ function Masthead() {
       textKey="MastheadPage"
       onSave={handleSave} 
       onCancel={handleCancel}
-      titleEditable={false}
+      titleEditable={true}
     />;
   }
 
@@ -64,7 +122,7 @@ function Masthead() {
     <div className="masthead-container">
       <div className="masthead-header">
         <h1>Editorial Board</h1>
-        {isLoggedIn && (
+        {isEditor && (
           <button
             className="edit-button"
             onClick={handleEditClick}

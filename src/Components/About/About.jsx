@@ -9,6 +9,8 @@ import { useAuth } from '../../AuthContext';
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
 const TEXT_READ_ENDPOINT = `${backendUrl}/text/read/AboutPage`;
 const TEXT_READ_MISSION_ENDPOINT = `${backendUrl}/text/read/MissionPage`;
+const TEXT_UPDATE_ENDPOINT = `${backendUrl}/text/update`;
+const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
 
 function About() {
   const [isEditing, setIsEditing] = useState(false);
@@ -16,7 +18,33 @@ function About() {
   const [content, setContent] = useState(null);
   const [missionContent, setMissionContent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, userEmail } = useAuth();
+  const [isEditor, setIsEditor] = useState(false);
+
+  useEffect(() => {
+    const checkIfEditor = async () => {
+      if (!isLoggedIn || !userEmail) {
+        setIsEditor(false);
+        return;
+      }
+      
+      try {
+        const response = await axios.get(USERS_READ_ENDPOINT);
+        if (response.data && response.data.Users) {
+          const users = Object.values(response.data.Users);
+          const currentUser = users.find(user => user.email === userEmail);
+          
+          if (currentUser && currentUser.roleCodes) {
+            setIsEditor(currentUser.roleCodes.includes('ED'));
+          }
+        }
+      } catch (error) {
+        console.error('Error checking editor status:', error);
+      }
+    };
+    
+    checkIfEditor();
+  }, [isLoggedIn, userEmail]);
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -56,14 +84,51 @@ function About() {
     setIsEditing(true);
   };
 
-  const handleSave = (updatedContent) => {
-    if (editSection === 'main') {
-      setContent(updatedContent);
-    } else if (editSection === 'mission') {
-      setMissionContent(updatedContent);
+  const handleSave = async (updatedContent) => {
+    try {
+      setIsLoading(true);
+      
+      const textKey = editSection === 'main' ? 'AboutPage' : 'MissionPage';
+      const readEndpoint = editSection === 'main' ? TEXT_READ_ENDPOINT : TEXT_READ_MISSION_ENDPOINT;
+      
+      // Update the server with new content
+      await axios.put(TEXT_UPDATE_ENDPOINT, {
+        key: textKey,
+        title: updatedContent.title,
+        text: updatedContent.text
+      });
+      
+      // Update local state
+      if (editSection === 'main') {
+        setContent(updatedContent);
+      } else if (editSection === 'mission') {
+        setMissionContent(updatedContent);
+      }
+      
+      // Refetch to ensure we have the latest data
+      try {
+        const refreshResponse = await axios.get(readEndpoint);
+        if (refreshResponse.data && refreshResponse.data.Content) {
+          if (editSection === 'main') {
+            setContent(refreshResponse.data.Content);
+          } else if (editSection === 'mission') {
+            setMissionContent(refreshResponse.data.Content);
+          }
+        }
+      } catch (refreshError) {
+        console.warn("Error refreshing content after update:", refreshError);
+        // We already updated the local state, so we can continue
+      }
+      
+    } catch (error) {
+      console.error("Error updating content:", error);
+      console.error("Error details:", error.response || error.message);
+      alert("There was a problem saving the changes. Please try again.");
+    } finally {
+      setIsLoading(false);
+      setIsEditing(false);
+      setEditSection(null);
     }
-    setIsEditing(false);
-    setEditSection(null);
   };
 
   const handleCancel = () => {
@@ -79,7 +144,7 @@ function About() {
       textKey={textKey}
       onSave={handleSave} 
       onCancel={handleCancel}
-      titleEditable={false}
+      titleEditable={true}
     />;
   }
 
@@ -88,7 +153,7 @@ function About() {
       <div className="about-hero">
         <div className="about-header">
           <h1>{content?.title || 'About Our Journal'}</h1>
-          {isLoggedIn && (
+          {isEditor && (
             <button
               className="edit-button"
               onClick={() => handleEditClick('main')}
@@ -113,7 +178,7 @@ function About() {
       <section className="about-section mission-section">
         <div className="section-header">
           <h2>Mission Statement</h2>
-          {isLoggedIn && (
+          {isEditor && (
             <button
               className="edit-button"
               onClick={() => handleEditClick('mission')}
