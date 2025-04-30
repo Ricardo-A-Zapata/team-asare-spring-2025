@@ -11,7 +11,7 @@ const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
 const USERS_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
 const USER_DELETE_ENDPOINT = `${BACKEND_URL}/user/delete`;
 const USER_UPDATE_ENDPOINT = `${BACKEND_URL}/user/update`;
-const ROLES_READ_ENDPOINT = `${BACKEND_URL}/roles`;
+const ROLES_READ_ENDPOINT = `${BACKEND_URL}/roles/read`;
 // Remove the unused ROLES_ENDPOINT variable
 // const ROLES_ENDPOINT = `${BACKEND_URL}/roles`;
 // Helper function to convert role codes to display names
@@ -605,17 +605,12 @@ function Users() {
     };
   }, []);
 
-  // Filter users based on current filters
-  const filteredUsers = filterUsers(users, filters);
-  
-  // Sort the filtered users based on current sort configuration
-  const sortedUsers = sortConfig ? sortUsers(filteredUsers, sortConfig) : filteredUsers;
-
+  // Use useMemo for filtering and sorting
   const displayUsers = useMemo(() => {
     // First filter the users
     const filteredUsers = filterUsers(users, { searchTerm: filters.searchTerm, selectedRole: filters.selectedRole });
-    // Then sort the filtered results if sortConfig is provided
-    return sortConfig ? sortUsers(filteredUsers, sortConfig) : filteredUsers;
+    // Then sort the filtered results
+    return sortUsers(filteredUsers, sortConfig);
   }, [users, filters.searchTerm, filters.selectedRole, sortConfig]);
 
   return (
@@ -638,15 +633,15 @@ function Users() {
           <div className="user-controls">
             <UserFilters filters={filters} setFilters={setFilters} roles={roles} />
             
-            {filteredUsers.length > 0 && (
+            {displayUsers.length > 0 && (
               <UserSorting sortConfig={sortConfig} setSortConfig={setSortConfig} />
             )}
           </div>
           
           <div className="user-count">
-            {filteredUsers.length === users.length 
+            {displayUsers.length === users.length 
               ? `Showing all ${users.length} users` 
-              : `Showing ${filteredUsers.length} of ${users.length} users`}
+              : `Showing ${displayUsers.length} of ${users.length} users`}
           </div>
           
           <AddUserForm

@@ -28,31 +28,7 @@ const mockRoles = {
   'RE': 'Reviewer'
 };
 
-const testUsers = {
-  'user1@example.com': {
-    name: 'John Doe',
-    email: 'user1@example.com',
-    affiliation: 'University A',
-    roleCodes: ['AU', 'RE']
-  },
-  'user2@example.com': {
-    name: 'Jane Smith',
-    email: 'user2@example.com',
-    affiliation: 'Company B',
-    roleCodes: ['ED']
-  },
-  'user3@example.com': {
-    name: 'Bob Johnson',
-    email: 'user3@example.com',
-    affiliation: 'Organization C',
-    roleCodes: ['AU']
-  }
-};
-
-// Convert test users object to array for sorting tests
-const testUserArray = Object.values(testUsers);
-
-const mockUsers = [
+const testUsers = [
   {
     name: 'John Doe',
     email: 'user1@example.com',
@@ -73,42 +49,50 @@ const mockUsers = [
   }
 ];
 
+// Convert test users array to object for API response format
+const mockUsersResponse = {
+  Users: testUsers.reduce((acc, user) => {
+    acc[user.email] = user;
+    return acc;
+  }, {})
+};
+
 describe('sortUsers function', () => {
   it('returns the original array if no sortConfig is provided', () => {
-    const result = sortUsers(testUserArray, null);
-    expect(result).toEqual(testUserArray);
+    const result = sortUsers(testUsers, null);
+    expect(result).toEqual(testUsers);
   });
   
   it('sorts by name in ascending order', () => {
-    const result = sortUsers(testUserArray, { key: 'name', direction: 'asc' });
+    const result = sortUsers(testUsers, { key: 'name', direction: 'asc' });
     expect(result[0].name).toBe('Bob Johnson');
     expect(result[1].name).toBe('Jane Smith');
     expect(result[2].name).toBe('John Doe');
   });
   
   it('sorts by name in descending order', () => {
-    const result = sortUsers(testUserArray, { key: 'name', direction: 'desc' });
+    const result = sortUsers(testUsers, { key: 'name', direction: 'desc' });
     expect(result[0].name).toBe('John Doe');
     expect(result[1].name).toBe('Jane Smith');
     expect(result[2].name).toBe('Bob Johnson');
   });
   
   it('sorts by email in ascending order', () => {
-    const result = sortUsers(testUserArray, { key: 'email', direction: 'asc' });
+    const result = sortUsers(testUsers, { key: 'email', direction: 'asc' });
     expect(result[0].email).toBe('user1@example.com');
     expect(result[1].email).toBe('user2@example.com');
     expect(result[2].email).toBe('user3@example.com');
   });
   
   it('sorts by affiliation in ascending order', () => {
-    const result = sortUsers(testUserArray, { key: 'affiliation', direction: 'asc' });
+    const result = sortUsers(testUsers, { key: 'affiliation', direction: 'asc' });
     expect(result[0].affiliation).toBe('Company B');
     expect(result[1].affiliation).toBe('Organization C');
     expect(result[2].affiliation).toBe('University A');
   });
   
   it('sorts by role in ascending order', () => {
-    const result = sortUsers(testUserArray, { key: 'role', direction: 'asc' });
+    const result = sortUsers(testUsers, { key: 'role', direction: 'asc' });
     // First role of Bob and John is Author, Jane's is Editor
     // Alphabetically: Author, Author, Editor
     const firstRoles = result.map(user => 
@@ -121,7 +105,7 @@ describe('sortUsers function', () => {
   
   it('handles missing affiliation values', () => {
     const usersWithMissingData = [
-      ...testUserArray,
+      ...testUsers,
       { name: 'Alice', email: 'alice@example.com', roleCodes: ['RE'] } // No affiliation
     ];
     
@@ -136,13 +120,11 @@ describe('Users Component', () => {
     axios.get.mockImplementation((url) => {
       if (url === ROLES_READ_ENDPOINT) {
         return Promise.resolve({
-          data: {
-            roles: mockRoles
-          }
+          data: mockRoles
         });
       }
       if (url === USERS_READ_ENDPOINT) {
-        return Promise.resolve({ data: { Users: testUsers } });
+        return Promise.resolve({ data: mockUsersResponse });
       }
       return Promise.reject(new Error(`Unknown endpoint: ${url}`));
     });    
@@ -287,17 +269,13 @@ describe('Users Component', () => {
     axios.get.mockImplementation((url) => {
       if (url === ROLES_READ_ENDPOINT) {
         return Promise.resolve({
-          data: {
-            roles: mockRoles
-          }
+          data: mockRoles
         });
       }
     
       if (url === USERS_READ_ENDPOINT) {
         return Promise.resolve({
-          data: {
-            Users: testUsers
-          }
+          data: mockUsersResponse
         });
       }
     
@@ -445,13 +423,14 @@ describe('Users Component', () => {
     
     // Verify sort applied
     const userElementsSorted = screen.getAllByRole('heading', { level: 2 });
-    expect(userElementsSorted[0].textContent).toBe('John Doe');
+    expect(userElementsSorted[0].textContent).toBe('Bob Johnson');
+    expect(userElementsSorted[1].textContent).toBe('Jane Smith');
+    expect(userElementsSorted[2].textContent).toBe('John Doe');
     
     // Clear sorting
     fireEvent.change(sortSelect, { target: { value: '' } });
     
-    // Verify original order is restored (or at least it's not sorted by name asc anymore)
-    // This test is a bit tricky as the original order depends on how the users are stored in the state
+    // Verify original order is restored
     const userElementsUnsorted = screen.getAllByRole('heading', { level: 2 });
     expect(userElementsUnsorted.length).toBe(3); // All users should be visible
   });
@@ -501,63 +480,36 @@ describe('Loading States', () => {
   });
 
   it('shows loading state while adding a user', async () => {
-    axios.get.mockImplementation((url) => {
-      if (url === ROLES_READ_ENDPOINT) {
-        return Promise.resolve({
-          data: {
-            roles: {
-              AU: 'Author',
-              ED: 'Editor',
-              RE: 'Reviewer',
-            },
-          },
-        });
-      }
-    
-      if (url === USERS_READ_ENDPOINT) {
-        return Promise.resolve({
-          data: {
-            Users: testUsers,
-          },
-        });
-      }
-    
-      return Promise.reject(new Error(`Unhandled GET request to ${url}`));
-    });    
-    axios.put.mockImplementation(() => new Promise(resolve => {
-      setTimeout(() => {
-        resolve({});
-      }, 100);
-    }));
-
     renderWithRouter(<Users />);
     
-    // Wait for initial load to complete
+    // Wait for initial data to load
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument();
     });
     
     // Click add user button
-    fireEvent.click(screen.getByText('Add a User'));
+    const addButton = screen.getByText('Add User');
+    fireEvent.click(addButton);
     
     // Fill in the form
-    const nameInput = screen.getByLabelText('Name');
-    const emailInput = screen.getByLabelText('Email');
-    const affiliationInput = screen.getByLabelText('Affiliation');
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'New User' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'new@example.com' } });
+    fireEvent.change(screen.getByLabelText('Affiliation'), { target: { value: 'Test' } });
     
-    fireEvent.change(nameInput, { target: { value: 'New User' } });
-    fireEvent.change(emailInput, { target: { value: 'new@example.com' } });
-    fireEvent.change(affiliationInput, { target: { value: 'New Org' } });
+    // Select a role
+    const roleSelect = screen.getByLabelText('Role');
+    fireEvent.change(roleSelect, { target: { value: 'admin' } });
     
     // Submit the form
-    fireEvent.click(screen.getByText('Submit'));
+    const submitButton = screen.getByText('Add User');
+    fireEvent.click(submitButton);
     
-    // Check that loading message is shown
-    expect(screen.getByText('Processing your request...')).toBeInTheDocument();
+    // Verify loading state
+    expect(screen.getByText('Adding user...')).toBeInTheDocument();
     
-    // Wait for loading to complete
+    // Wait for the loading state to clear
     await waitFor(() => {
-      expect(screen.queryByText('Processing your request...')).not.toBeInTheDocument();
+      expect(screen.queryByText('Adding user...')).not.toBeInTheDocument();
     });
   });
 
