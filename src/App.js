@@ -3,6 +3,7 @@ import {
   BrowserRouter,
   Routes,
   Route,
+  Navigate
 } from 'react-router-dom';
 
 import './App.css';
@@ -15,7 +16,6 @@ import Manuscripts from './Components/Manuscripts/Manuscripts';
 import ManuscriptDetails from './Components/Manuscripts/ManuscriptDetails';
 import AddManuscriptForm from './Components/Manuscripts/AddManuscriptForm';
 import About from './Components/About/About';
-import UserPage from './Components/UserPage/UserPage';
 import Login from './Components/Login/Login';
 import Signup from './Components/Signup/Signup';
 import ProtectedRoute from './Components/ProtectedRoute/ProtectRoute';
@@ -46,14 +46,6 @@ function App() {
             }
           />
           <Route
-            path="users/:email"
-            element={
-              <ProtectedRoute>
-                <UserPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="manuscripts"
             element={<Manuscripts />}
           />
@@ -66,6 +58,9 @@ function App() {
             }
           />
           <Route path="masthead" element={<Masthead />} />
+          
+          {/* Catch-all route for emails - redirect to users list */}
+          <Route path="/:email" element={<Navigate to="/users" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

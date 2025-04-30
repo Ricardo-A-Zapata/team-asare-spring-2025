@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import propTypes from 'prop-types';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 
 import { BACKEND_URL } from '../../constants';
 import Loading from '../Loading/Loading';
@@ -493,7 +492,7 @@ function User({ user, onDelete, onEdit, isOperationLoading, roles, currentUserRo
   
   return (
     <div className="user-container">
-      <Link to={`/${user.email}`}>
+      <div>
         <h2>{user.name}</h2>
         <p>Email: {user.email}</p>
         <p>Affiliation: {user.affiliation}</p>
@@ -502,7 +501,7 @@ function User({ user, onDelete, onEdit, isOperationLoading, roles, currentUserRo
             ? user.roleCodes.map(code => roles[code] || code).join(', ')
             : 'No roles assigned'}
         </p>
-      </Link>
+      </div>
       {isEditor && (
         <div className="button-group">
           <button 
