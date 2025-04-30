@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { useAuth } from '../../AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 import { BACKEND_URL } from '../../constants';
 import './AddManuscriptForm.css';
@@ -13,7 +12,7 @@ const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEN
 const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscript/create`;
 const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
 
-function AddManuscriptForm() {
+function AddManuscriptForm({ visible, cancel, fetchManuscripts, setError, setIsOperationLoading }) {
   const [title, setTitle] = useState('');
   const [abstract, setAbstract] = useState('');
   const [text, setText] = useState('');
@@ -21,20 +20,19 @@ function AddManuscriptForm() {
   const [guestAuthor, setGuestAuthor] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [guestAffiliation, setGuestAffiliation] = useState('');
-  const [error, setError] = useState('');
-  const [isOperationLoading, setIsOperationLoading] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [isFormLoading, setIsFormLoading] = useState(false);
   const titleInputRef = useRef(null);
   const { userEmail } = useAuth();
-  const navigate = useNavigate();
 
   // Focus the title input when the form becomes visible
   useEffect(() => {
-    if (titleInputRef.current) {
+    if (visible && titleInputRef.current) {
       setTimeout(() => {
         titleInputRef.current.focus();
       }, 100);
     }
-  }, []);
+  }, [visible]);
 
   // Fetch user info if user is logged in
   useEffect(() => {
@@ -52,12 +50,12 @@ function AddManuscriptForm() {
         if (currentUser) {
           setUserInfo(currentUser);
         } else {
-          setError('Could not find user information. Please try again later.');
+          setFormError('Could not find user information. Please try again later.');
         }
       }
     } catch (error) {
       console.error('Error fetching user info:', error);
-      setError('Could not load user information. Please try again later.');
+      setFormError('Could not load user information. Please try again later.');
     }
   };
 
@@ -65,12 +63,12 @@ function AddManuscriptForm() {
     event.preventDefault();
     
     if (!title || !abstract || !text) {
-      setError('Title, abstract, and text are required');
+      setFormError('Title, abstract, and text are required');
       return;
     }
 
     if (!userInfo && (!guestAuthor || !guestEmail)) {
-      setError('Author name and email are required for guest submissions');
+      setFormError('Author name and email are required for guest submissions');
       return;
     }
     
@@ -85,24 +83,42 @@ function AddManuscriptForm() {
     };
     
     try {
+      setIsFormLoading(true);
       setIsOperationLoading(true);
       console.log('Sending manuscript to:', MANUSCRIPT_CREATE_ENDPOINT);
       console.log('Manuscript data:', newManuscript);
       const response = await axios.put(MANUSCRIPT_CREATE_ENDPOINT, newManuscript);
       console.log('Server response:', response);
       
-      // Show success message and redirect
+      // Show success message
       alert('Manuscript submitted successfully!');
-      navigate('/');
+      
+      // Reset form
+      setTitle('');
+      setAbstract('');
+      setText('');
+      setGuestAuthor('');
+      setGuestEmail('');
+      setGuestAffiliation('');
+      setFormError('');
+      
+      // Refresh the manuscript list and close the form
+      await fetchManuscripts();
+      cancel();
     } catch (error) {
       console.error('Full error object:', error);
       console.error('Error response:', error.response);
       console.error('Error request:', error.request);
+      setFormError(`Error creating manuscript: ${error.response?.data?.message || error.message}`);
       setError(`Error creating manuscript: ${error.response?.data?.message || error.message}`);
     } finally {
+      setIsFormLoading(false);
       setIsOperationLoading(false);
     }
   };
+
+  // If the form is not visible, don't render anything
+  if (!visible) return null;
 
   return (
     <div className="form-container">
@@ -202,16 +218,16 @@ function AddManuscriptForm() {
           </div>
         </div>
         
-        {error && <div className="error-message">{error}</div>}
+        {formError && <div className="error-message">{formError}</div>}
         
         <div className="form-actions">
-          <button type="button" onClick={() => navigate('/')}>Cancel</button>
+          <button type="button" onClick={cancel}>Cancel</button>
           <button 
             type="submit" 
-            disabled={isOperationLoading}
+            disabled={isFormLoading}
             title="Submit manuscript"
           >
-            {isOperationLoading ? 'Submitting...' : 'Submit'}
+            {isFormLoading ? 'Submitting...' : 'Submit'}
           </button>
         </div>
       </form>

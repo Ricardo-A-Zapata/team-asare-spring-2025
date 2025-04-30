@@ -7,11 +7,11 @@ export const PAGES = [
   { label: 'Home', destination: '/' },
   { label: 'About', destination: '/about' },
   { label: 'Masthead', destination: '/masthead' },
+  { label: 'View All Manuscripts', destination: '/manuscripts' },
 ];
 
 export const PROTECTED_PAGES = [
   { label: 'View All Users', destination: '/users' },
-  { label: 'View All Manuscripts', destination: '/manuscripts' },
 ];
 
 function NavLink({ page }) {
@@ -43,7 +43,6 @@ function Navbar() {
           </>
         ) : (
           <>
-            <NavLink page={{ label: 'Submit Manuscript', destination: '/submit-manuscript' }} />
             <NavLink page={{ label: 'Login', destination: '/login' }} />
             <NavLink page={{ label: 'Sign up', destination: '/signup' }} />
           </>

@@ -5,17 +5,19 @@ import { Link } from 'react-router-dom';
 
 import { BACKEND_URL } from '../../constants';
 import Loading from '../Loading/Loading';
+import { useAuth } from '../../AuthContext';
 import './Users.css';
 
-const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
-const USERS_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
-const USER_DELETE_ENDPOINT = `${BACKEND_URL}/user/delete`;
-const USER_UPDATE_ENDPOINT = `${BACKEND_URL}/user/update`;
-const ROLES_READ_ENDPOINT = `${BACKEND_URL}/roles/read`;
+// Remove trailing slash if present to ensure proper URL formation
+const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+
+const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
+const USERS_CREATE_ENDPOINT = `${backendUrl}/user/create`;
+const USER_DELETE_ENDPOINT = `${backendUrl}/user/delete`;
+const USER_UPDATE_ENDPOINT = `${backendUrl}/user/update`;
+const ROLES_READ_ENDPOINT = `${backendUrl}/roles`;
 // Remove the unused ROLES_ENDPOINT variable
 // const ROLES_ENDPOINT = `${BACKEND_URL}/roles`;
-// Helper function to convert role codes to display names
-const getRoleDisplayName = (roleCode, roles) => roles[roleCode] || roleCode;
 
 // New function for filtering users
 const filterUsers = (users, filters) => {
@@ -48,21 +50,25 @@ const sortUsers = (users, sortCriteria) => {
     let comparison = 0;
     
     switch (key) {
-      case 'name':
+      case 'name': {
         comparison = a.name.localeCompare(b.name);
         break;
-      case 'email':
+      }
+      case 'email': {
         comparison = a.email.localeCompare(b.email);
         break;
-      case 'affiliation':
+      }
+      case 'affiliation': {
         comparison = (a.affiliation || '').localeCompare(b.affiliation || '');
         break;
-      case 'role':
+      }
+      case 'role': {
         // Sort by first role code if available
         const aRole = a.roleCodes && a.roleCodes.length > 0 ? a.roleCodes[0] : '';
         const bRole = b.roleCodes && b.roleCodes.length > 0 ? b.roleCodes[0] : '';
         comparison = aRole.localeCompare(bRole);
         break;
+      }
       default:
         comparison = 0;
     }
@@ -306,13 +312,14 @@ AddUserForm.propTypes = {
 
 function EditUserForm({ 
   visible, cancel, fetchUsers, setError, user, setIsOperationLoading,
-  roles
+  roles, isEditor
 }) {
   const [name, setName] = useState(user.name);
   const [affiliation, setAffiliation] = useState(user.affiliation || '');
   const [selectedRoles, setSelectedRoles] = useState(
     (user.roleCodes && user.roleCodes.length > 0) ? user.roleCodes : (user.roles || [])
   );
+  const [formError, setFormError] = useState('');
   const email = user.email;
   const nameInputRef = React.useRef(null);
   
@@ -328,16 +335,33 @@ function EditUserForm({
   
   const handleRoleChange = (event) => {
     const value = event.target.value;
+    
+    // If user is not an editor and trying to add editor role, show error
+    if (!isEditor && value === 'ED' && !selectedRoles.includes('ED')) {
+      setFormError('Only editors can assign the editor role to users');
+      return;
+    }
+    
     setSelectedRoles(
       // When a role is already selected, remove it; otherwise, add it
       selectedRoles.includes(value)
         ? selectedRoles.filter(role => role !== value)
         : [...selectedRoles, value]
     );
+    
+    // Clear any previous error when roles are successfully changed
+    setFormError('');
   };
   
   const updateUser = async (event) => {
     event.preventDefault();
+    
+    // If user is not an editor but trying to update editor role
+    if (!isEditor && selectedRoles.includes('ED') && !user.roleCodes?.includes('ED')) {
+      setFormError('You do not have permission to assign the editor role');
+      return;
+    }
+    
     const updatedUser = {
       name,
       email,
@@ -349,10 +373,14 @@ function EditUserForm({
     try {
       setIsOperationLoading(true);
       await axios.put(USER_UPDATE_ENDPOINT, updatedUser);
+      console.log('User updated successfully:', updatedUser);
       await fetchUsers();
       cancel();
     } catch (error) {
-      setError(`error updating the user. ${error.response.data.message}`);
+      console.error('Error updating user:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      setFormError(`Error updating the user: ${error.response?.data?.message || error.message}`);
+      setError(`Error updating the user: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsOperationLoading(false);
     }
@@ -389,7 +417,10 @@ function EditUserForm({
         </div>
         
         <div className="roles-container">
-          <h4>Select Roles</h4>
+          <h4>
+            Select Roles 
+            {isEditor && <span className="editor-badge">Editor Mode</span>}
+          </h4>
           <div className="roles-checkboxes">
             {Object.entries(roles).map(([code, displayName]) => (
               <div key={code} className="role-checkbox">
@@ -399,11 +430,24 @@ function EditUserForm({
                   value={code}
                   checked={selectedRoles.includes(code)}
                   onChange={handleRoleChange}
+                  disabled={!isEditor && code === 'ED'} // Only editors can assign editor roles
                 />
                 <label htmlFor={`edit-role-${code}`}>{displayName}</label>
               </div>
             ))}
           </div>
+          {isEditor && (
+            <div className="editor-note">
+              As an editor, you can modify all roles including assigning editor privileges.
+            </div>
+          )}
+          {!isEditor && (
+            <div className="non-editor-note">
+              Only editors can assign or modify the Editor role.
+            </div>
+          )}
+          
+          {formError && <div className="error-message">{formError}</div>}
         </div>
         
         <div className="form-actions">
@@ -427,7 +471,8 @@ EditUserForm.propTypes = {
     roleCodes: propTypes.array
   }).isRequired,
   setIsOperationLoading: propTypes.func.isRequired,
-  roles: propTypes.object.isRequired
+  roles: propTypes.object.isRequired,
+  isEditor: propTypes.bool
 };
 
 
@@ -442,7 +487,10 @@ ErrorMessage.propTypes = {
   message: propTypes.string.isRequired,
 };
 
-function User({ user, onDelete, onEdit, isOperationLoading, roles }) {
+function User({ user, onDelete, onEdit, isOperationLoading, roles, currentUserRoles }) {
+  // Check if the current user has editor permissions
+  const isEditor = currentUserRoles && currentUserRoles.includes('ED');
+  
   return (
     <div className="user-container">
       <Link to={`/${user.email}`}>
@@ -455,22 +503,24 @@ function User({ user, onDelete, onEdit, isOperationLoading, roles }) {
             : 'No roles assigned'}
         </p>
       </Link>
-      <div className="button-group">
-        <button 
-          type="button" 
-          onClick={() => onDelete(user.email)}
-          disabled={isOperationLoading}
-        >
-          Delete
-        </button>
-        <button 
-          type="button" 
-          onClick={() => onEdit(user)}
-          disabled={isOperationLoading}
-        >
-          Edit
-        </button>
-      </div>
+      {isEditor && (
+        <div className="button-group">
+          <button 
+            type="button" 
+            onClick={() => onDelete(user.email)}
+            disabled={isOperationLoading}
+          >
+            Delete
+          </button>
+          <button 
+            type="button" 
+            onClick={() => onEdit(user)}
+            disabled={isOperationLoading}
+          >
+            Edit
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -485,7 +535,8 @@ User.propTypes = {
   onDelete: propTypes.func.isRequired,
   onEdit: propTypes.func.isRequired,
   isOperationLoading: propTypes.bool.isRequired,
-  roles: propTypes.object.isRequired
+  roles: propTypes.object.isRequired,
+  currentUserRoles: propTypes.array
 };
 
 function usersObjectToArray(Data) {
@@ -504,6 +555,8 @@ function Users() {
   const [isLoading, setIsLoading] = useState(true);
   const [isOperationLoading, setIsOperationLoading] = useState(false);
   const [roles, setRoles] = useState({});
+  const [currentUserRoles, setCurrentUserRoles] = useState([]);
+  const { userEmail } = useAuth();
   
   const fetchRoles = async () => {
     try {
@@ -522,7 +575,8 @@ function Users() {
       console.log('Processed roles:', roleData);
     } catch (error) {
       console.error('Error fetching roles:', error);
-      setError(`There was a problem retrieving the roles. ${error}`);
+      console.error('Error details:', error.response || error.message);
+      setError(`There was a problem retrieving the roles. Please try again later.`);
     }
   };
 
@@ -586,7 +640,19 @@ function Users() {
       try {
         setIsLoading(true);
         setError('');
-        await Promise.all([fetchRoles(), fetchUsers()]);
+        
+        // First fetch roles, then users
+        await fetchRoles();
+        await fetchUsers();
+        
+        // We need to check for current user after users are loaded
+        if (mounted && userEmail && users.length > 0) {
+          const currentUser = users.find(user => user.email === userEmail);
+          if (currentUser && currentUser.roleCodes) {
+            console.log('Current user roles:', currentUser.roleCodes);
+            setCurrentUserRoles(currentUser.roleCodes);
+          }
+        }
       } catch (error) {
         if (mounted) {
           setError(`There was a problem loading data. ${error}`);
@@ -603,7 +669,7 @@ function Users() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [userEmail, users.length]);
 
   // Use useMemo for filtering and sorting
   const displayUsers = useMemo(() => {
@@ -621,14 +687,22 @@ function Users() {
         <>
           <header>
             <h1>View All Users</h1>
-            <button 
-              type="button" 
-              onClick={showAddUserForm}
-              disabled={isOperationLoading}
-            >
-              Add a User
-            </button>
+            {currentUserRoles.includes('ED') && (
+              <button 
+                type="button" 
+                onClick={showAddUserForm}
+                disabled={isOperationLoading}
+              >
+                Add a User
+              </button>
+            )}
           </header>
+          
+          {!currentUserRoles.includes('ED') && (
+            <div className="permission-notice">
+              You are viewing users in read-only mode. Editor privileges are required to add, edit, or delete users.
+            </div>
+          )}
           
           <div className="user-controls">
             <UserFilters filters={filters} setFilters={setFilters} roles={roles} />
@@ -662,6 +736,7 @@ function Users() {
               user={editingUser}
               setIsOperationLoading={setIsOperationLoading}
               roles={roles}
+              isEditor={currentUserRoles.includes('ED')}
             />
           )}
           
@@ -676,6 +751,7 @@ function Users() {
                 onEdit={editUser}
                 isOperationLoading={isOperationLoading}
                 roles={roles}
+                currentUserRoles={currentUserRoles}
               />
             ))
           ) : (

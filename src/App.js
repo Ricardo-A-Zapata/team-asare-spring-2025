@@ -55,11 +55,7 @@ function App() {
           />
           <Route
             path="manuscripts"
-            element={
-              <ProtectedRoute>
-                <Manuscripts />
-              </ProtectedRoute>
-            }
+            element={<Manuscripts />}
           />
           <Route
             path="manuscripts/:id"

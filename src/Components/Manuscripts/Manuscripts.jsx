@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import { BACKEND_URL } from '../../constants';
 import Loading from '../Loading/Loading';
 import AddManuscriptForm from './AddManuscriptForm';
+import { useAuth } from '../../AuthContext';
 import './Manuscripts.css';
 
 // Remove trailing slash if present to ensure proper URL formation
@@ -60,6 +61,37 @@ function sortManuscripts(manuscripts, sortConfig) {
     }
   });
 }
+
+// Login Modal component
+function LoginModal({ onClose }) {
+  const navigate = useNavigate();
+  
+  const goToLogin = () => {
+    navigate('/login');
+  };
+  
+  const goToSignup = () => {
+    navigate('/signup');
+  };
+  
+  return (
+    <div className="login-modal-overlay">
+      <div className="login-modal">
+        <h3>Authentication Required</h3>
+        <p>You need to be logged in to submit a manuscript.</p>
+        <div className="login-modal-buttons">
+          <button type="button" onClick={goToLogin}>Login</button>
+          <button type="button" onClick={goToSignup}>Sign Up</button>
+          <button type="button" className="cancel-button" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+LoginModal.propTypes = {
+  onClose: PropTypes.func.isRequired
+};
 
 function ManuscriptSorting({ sortConfig, setSortConfig }) {
   const handleSortChange = (event) => {
@@ -161,6 +193,8 @@ function Manuscripts() {
   const [addingManuscript, setAddingManuscript] = useState(false);
   const [isOperationLoading, setIsOperationLoading] = useState(false);
   const [sortConfig, setSortConfig] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { isLoggedIn } = useAuth();
 
   const fetchManuscripts = async () => {
     try {
@@ -208,13 +242,21 @@ function Manuscripts() {
   };
 
   const showAddManuscriptForm = () => {
-    setAddingManuscript(true);
-    setError('');
+    if (isLoggedIn) {
+      setAddingManuscript(true);
+      setError('');
+    } else {
+      setShowLoginModal(true);
+    }
   };
 
   const hideAddManuscriptForm = () => {
     setAddingManuscript(false);
     setError('');
+  };
+  
+  const hideLoginModal = () => {
+    setShowLoginModal(false);
   };
 
   return (
@@ -233,6 +275,10 @@ function Manuscripts() {
               Submit New Manuscript
             </button>
           </header>
+          
+          {showLoginModal && (
+            <LoginModal onClose={hideLoginModal} />
+          )}
           
           <AddManuscriptForm
             visible={addingManuscript}
