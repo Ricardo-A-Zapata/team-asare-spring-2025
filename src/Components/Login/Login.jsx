@@ -9,6 +9,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { isLoggedIn, userEmail, login, logout } = useAuth();
   const [userInfo, setUserInfo] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -36,7 +37,7 @@ const Login = () => {
     navigate('/');
   }
 
-  async function handleSubmit (e) {
+  async function handleLogin (e) {
     e.preventDefault();
     const email = e.target?.elements?.email?.value;
     const password = e.target?.elements?.password?.value;
@@ -50,6 +51,19 @@ const Login = () => {
     }
   } 
 
+  const changePassword = async (e) => {
+    e.preventDefault();
+    const newPassword = e.target?.elements?.password?.value;
+    console.log(newPassword);
+    try {
+      await axios.post(`${BACKEND_URL}user/password_update`, {email:userEmail, password:newPassword});
+      setShowForm(false);
+    }
+    catch (err) {
+      alert(`Password change Failed!\n ${err?.response?.data?.message}`)
+    }
+  }
+
   return (
     <div className="login-container">
       {isLoggedIn ? (
@@ -61,13 +75,20 @@ const Login = () => {
               <p><strong>Roles:</strong> {userInfo.roleCodes?.join(', ') || userInfo.roles?.join(', ') || 'Not provided'}</p>
             </div>
           )}
-          <button className="logout-button" onClick={handleLogout}>Logout</button>
+          {!showForm && <button className="change-password-button" onClick={() => {setShowForm(true)}}>Change Password</button>}
+          {showForm && <form onSubmit={changePassword} className="change-password-form">
+            <label htmlFor="password">New Password</label>
+            <input type="password" name="password" placeholder='Password123' />
+            <button type="submit">Submit New Password</button>
+            <button onClick={() => setShowForm(false)}>Cancel</button>
+            </form>}
+          <button className="logout-button" disabled={showForm} onClick={handleLogout}>Logout</button>
         </div>
       ) : (
         <div className="login-form">
           <h1>Login</h1>
           <div className="modal">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleLogin}>
               <div className='input'>
                 <div className="email-input">
                   <label htmlFor="email">Email</label>

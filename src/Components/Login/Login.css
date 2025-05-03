@@ -116,3 +116,9 @@ button:hover {
 .logout-button:hover {
     background-color: #c82333;
 }
+
+.change-password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1vh;
+}
