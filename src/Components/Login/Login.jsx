@@ -18,14 +18,15 @@ const Login = () => {
 
   const fetchUserInfo = async () => {
     try {
-      const { data } = await axios.get(`${BACKEND_URL}/user/read`);
-      const users = Object.values(data.Users);
-      const currentUser = users.find(user => user.email === userEmail);
-      if (currentUser) {
-        setUserInfo(currentUser);
+      console.log(userEmail);
+      const  user  = (await axios.get(`${BACKEND_URL}/user/read/${userEmail}`)).data.Users;
+      console.log(user);
+      if (user) {
+        setUserInfo(user);
       }
     } catch (err) {
       console.error('Failed to fetch user info:', err);
+      alert(err)
     }
   };
 
@@ -40,7 +41,7 @@ const Login = () => {
     const email = e.target?.elements?.email?.value;
     const password = e.target?.elements?.password?.value;
     try {
-      await axios.post(`${BACKEND_URL}login`, {email, password});
+      await axios.post(`${BACKEND_URL}/login`, {email, password});
       login(email);
       navigate('/');
     }

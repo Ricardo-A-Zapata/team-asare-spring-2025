@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 
 const AuthContext = createContext();
@@ -23,18 +23,18 @@ export function AuthProvider({ children }) {
   };
   
   // Listen for localStorage changes in other tabs/windows
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const loggedInStatus = localStorage.getItem("loggedIn") === "true";
-      const storedEmail = localStorage.getItem("email") || "";
+  // useEffect(() => {
+  //   const handleStorageChange = () => {
+  //     const loggedInStatus = localStorage.getItem("loggedIn") === "true";
+  //     const storedEmail = localStorage.getItem("email") || "";
       
-      setIsLoggedIn(loggedInStatus);
-      setUserEmail(storedEmail);
-    };
+  //     setIsLoggedIn(loggedInStatus);
+  //     setUserEmail(storedEmail);
+  //   };
     
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  //   window.addEventListener('storage', handleStorageChange);
+  //   return () => window.removeEventListener('storage', handleStorageChange);
+  // }, []);
   
   const value = {
     isLoggedIn,
