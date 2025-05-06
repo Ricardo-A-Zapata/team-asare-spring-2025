@@ -105,16 +105,34 @@ function Masthead() {
         // Initialize contents with default values
         const initialContents = { ...DEFAULT_CONTENT };
         
-        // Fetch content for each text key
+        // Fetch content for each text key and create if missing
         for (const key of Object.values(TEXT_KEYS)) {
           try {
+            // Try to fetch the existing content
             const response = await axios.get(`${TEXT_READ_ENDPOINT}/${key}`);
             if (response.data && response.data.Content) {
               initialContents[key] = response.data.Content;
             }
           } catch (error) {
             console.warn(`Error fetching content for ${key}:`, error);
-            // Keep using the default content for this key
+            
+            // If it's a 404 Not Found error, create the text entry
+            if (error.response && error.response.status === 404) {
+              try {
+                console.log(`Creating missing text entry for ${key}`);
+                await axios.post(`${backendUrl}/text/create`, {
+                  key: key,
+                  title: DEFAULT_CONTENT[key].title,
+                  text: DEFAULT_CONTENT[key].text
+                });
+                
+                // After creating, set the content to our default
+                initialContents[key] = DEFAULT_CONTENT[key];
+              } catch (createError) {
+                console.error(`Failed to create text entry for ${key}:`, createError);
+                // Keep using the default content for this key
+              }
+            }
           }
         }
         
@@ -138,12 +156,28 @@ function Masthead() {
     try {
       setIsLoading(true);
       
-      // Update the server with new content
-      await axios.put(TEXT_UPDATE_ENDPOINT, {
-        key: currentEditKey,
-        title: updatedContent.title,
-        text: updatedContent.text
-      });
+      // First try to update the existing entry
+      try {
+        await axios.put(TEXT_UPDATE_ENDPOINT, {
+          key: currentEditKey,
+          title: updatedContent.title,
+          text: updatedContent.text
+        });
+      } catch (updateError) {
+        // If update fails with 406 (Not Acceptable) or 404 (Not Found), try to create a new entry
+        if (updateError.response && 
+           (updateError.response.status === 406 || updateError.response.status === 404)) {
+          console.log(`Creating new text entry for ${currentEditKey} since update failed`);
+          await axios.post(`${backendUrl}/text/create`, {
+            key: currentEditKey,
+            title: updatedContent.title,
+            text: updatedContent.text
+          });
+        } else {
+          // Rethrow if it's not a 406/404 error
+          throw updateError;
+        }
+      }
       
       // Update local state
       setContents(prev => ({
@@ -167,7 +201,11 @@ function Masthead() {
       
     } catch (error) {
       console.error("Error updating content:", error);
-      alert("There was a problem saving the changes. Please try again.");
+      let errorMessage = "There was a problem saving the changes. Please try again.";
+      if (error.response && error.response.data && error.response.data.message) {
+        errorMessage = error.response.data.message;
+      }
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
       setIsEditing(false);
@@ -182,8 +220,14 @@ function Masthead() {
 
   // Helper function to format person card content
   const formatPersonContent = (content) => {
-    if (!content || !content.text) return ['', '', ''];
-    const lines = content.text.split('\n');
+    if (!content) return ['', '', ''];
+    
+    // Use default if no text or empty text
+    const text = (content.text && content.text.trim()) ? content.text : '';
+    
+    if (!text) return ['', '', ''];
+    
+    const lines = text.split('\n');
     return [
       lines[0] || '', // Name
       lines[1] || '', // Affiliation
