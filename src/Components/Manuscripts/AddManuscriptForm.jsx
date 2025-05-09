@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import { useAuth } from '../../AuthContext';
 
-import { BACKEND_URL } from '../../constants';
+import { BACKEND_URL, API_ENDPOINTS, MANUSCRIPT_STATES } from '../../constants';
 import './AddManuscriptForm.css';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
 // const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscripts`;
-const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}/manuscript/create`;
-const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
+const MANUSCRIPT_CREATE_ENDPOINT = `${backendUrl}${API_ENDPOINTS.MANUSCRIPT_CREATE}`;
+const USERS_READ_ENDPOINT = `${backendUrl}${API_ENDPOINTS.USERS_READ}`;
 
 function AddManuscriptForm({ visible, cancel, fetchManuscripts, setError, setIsOperationLoading }) {
   const [title, setTitle] = useState('');
@@ -79,7 +79,7 @@ function AddManuscriptForm({ visible, cancel, fetchManuscripts, setError, setIsO
       author_affiliation: userInfo ? userInfo.affiliation : guestAffiliation,
       abstract,
       text,
-      state: "SUBMITTED"
+      state: MANUSCRIPT_STATES.SUBMITTED
     };
     
     try {

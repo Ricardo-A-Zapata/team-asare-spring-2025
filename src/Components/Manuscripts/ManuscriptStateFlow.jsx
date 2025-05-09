@@ -1,20 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './ManuscriptStateFlow.css';
-
-// Define the manuscript states
-export const MANUSCRIPT_STATES = {
-  SUBMITTED: 'SUBMITTED',
-  REJECTED: 'REJECTED',
-  REFEREE_REVIEW: 'REFEREE_REVIEW',
-  AUTHOR_REVISIONS: 'AUTHOR_REVISIONS',
-  WITHDRAWN: 'WITHDRAWN',
-  COPY_EDIT: 'COPY_EDIT',
-  AUTHOR_REVIEW: 'AUTHOR_REVIEW',
-  FORMATTING: 'FORMATTING',
-  PUBLISHED: 'PUBLISHED',
-  EDITOR_REVIEW: 'EDITOR_REVIEW'
-};
+import { MANUSCRIPT_STATES } from '../../constants';
 
 // Define the flow of states for visualization
 const STATE_FLOW = [

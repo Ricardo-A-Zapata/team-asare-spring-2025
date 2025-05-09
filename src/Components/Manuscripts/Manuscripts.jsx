@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 
-import { BACKEND_URL } from '../../constants';
+import { BACKEND_URL, API_ENDPOINTS, USER_ROLES } from '../../constants';
 import Loading from '../Loading/Loading';
 import AddManuscriptForm from './AddManuscriptForm';
 import { useAuth } from '../../AuthContext';
@@ -11,8 +11,8 @@ import './Manuscripts.css';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-const MANUSCRIPTS_READ_ENDPOINT = `${backendUrl}/manuscripts`;
-const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
+const MANUSCRIPTS_READ_ENDPOINT = `${backendUrl}${API_ENDPOINTS.MANUSCRIPTS_READ}`;
+const USERS_READ_ENDPOINT = `${backendUrl}${API_ENDPOINTS.USERS_READ}`;
 
 // Helper function to convert manuscripts object to array
 function manuscriptsToArray(manuscripts) {
@@ -213,7 +213,7 @@ function Manuscripts() {
         const currentUser = users.find(user => user.email === userEmail);
         
         // If user is not an editor, only show their own manuscripts
-        if (currentUser && !currentUser.roleCodes?.includes('ED')) {
+        if (currentUser && !currentUser.roleCodes?.includes(USER_ROLES.EDITOR)) {
           manuscriptsArray = manuscriptsArray.filter(manuscript => 
             manuscript.author_email.toLowerCase() === userEmail.toLowerCase()
           );

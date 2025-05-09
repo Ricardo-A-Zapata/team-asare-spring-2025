@@ -4,7 +4,7 @@ import axios from 'axios';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../AuthContext';
 
-import { BACKEND_URL } from '../../constants';
+import { BACKEND_URL, API_ENDPOINTS, STORAGE_KEYS, USER_ROLES } from '../../constants';
 import Loading from '../Loading/Loading';
 import './Manuscripts.css';
 import ManuscriptWorkflow from './ManuscriptWorkflow';
@@ -14,8 +14,8 @@ import './ManuscriptStateFlow.css';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-const MANUSCRIPTS_READ_ENDPOINT = `${backendUrl}/manuscripts`;
-const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
+const MANUSCRIPTS_READ_ENDPOINT = `${backendUrl}${API_ENDPOINTS.MANUSCRIPTS_READ}`;
+const USERS_READ_ENDPOINT = `${backendUrl}${API_ENDPOINTS.USERS_READ}`;
 
 function StateDisplay({ state }) {
   const stateClass = state.toLowerCase().replace('_', '-');
@@ -45,7 +45,7 @@ function ManuscriptDetails() {
   useEffect(() => {
     if (id) {
       try {
-        const savedReview = localStorage.getItem(`manuscript_review_${id}`);
+        const savedReview = localStorage.getItem(`${STORAGE_KEYS.MANUSCRIPT_REVIEW}${id}`);
         if (savedReview) {
           const parsedReview = JSON.parse(savedReview);
           console.log('Found saved review data in localStorage:', parsedReview);
@@ -141,7 +141,7 @@ function ManuscriptDetails() {
   }, [id, userEmail]);
 
   // Get referee users for dropdown
-  const refereeUsers = users.filter(u => u.roleCodes && u.roleCodes.includes('RE'));
+  const refereeUsers = users.filter(u => u.roleCodes && u.roleCodes.includes(USER_ROLES.REFEREE));
 
   if (loading) {
     return <Loading message="Loading manuscript details..." />;

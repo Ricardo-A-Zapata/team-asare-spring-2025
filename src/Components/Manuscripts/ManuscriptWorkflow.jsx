@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { BACKEND_URL } from '../../constants';
+import { BACKEND_URL, API_ENDPOINTS, MANUSCRIPT_STATES, USER_ROLES, STORAGE_KEYS, VERDICT_TYPES } from '../../constants';
 
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-const MANUSCRIPT_STATE_ENDPOINT = `${backendUrl}/manuscript/state`;
-const MANUSCRIPT_REFEREE_ENDPOINT = `${backendUrl}/manuscript/referee`;
-const MANUSCRIPT_REVIEW_ENDPOINT = `${backendUrl}/manuscript/review`;
-const MANUSCRIPT_WITHDRAW_ENDPOINT = `${backendUrl}/manuscript/withdraw`;
-const MANUSCRIPT_TEXT_ENDPOINT = `${backendUrl}/manuscript/text`;
+const MANUSCRIPT_STATE_ENDPOINT = `${backendUrl}${API_ENDPOINTS.MANUSCRIPT_STATE}`;
+const MANUSCRIPT_REFEREE_ENDPOINT = `${backendUrl}${API_ENDPOINTS.MANUSCRIPT_REFEREE}`;
+const MANUSCRIPT_REVIEW_ENDPOINT = `${backendUrl}${API_ENDPOINTS.MANUSCRIPT_REVIEW}`;
+const MANUSCRIPT_WITHDRAW_ENDPOINT = `${backendUrl}${API_ENDPOINTS.MANUSCRIPT_WITHDRAW}`;
+const MANUSCRIPT_TEXT_ENDPOINT = `${backendUrl}${API_ENDPOINTS.MANUSCRIPT_TEXT}`;
 
 // State display component
 function StateDisplay({ state }) {
@@ -26,19 +26,7 @@ StateDisplay.propTypes = {
   state: PropTypes.string.isRequired
 };
 
-// Define the manuscript states
-const MANUSCRIPT_STATES = {
-  SUBMITTED: 'SUBMITTED',
-  REJECTED: 'REJECTED',
-  REFEREE_REVIEW: 'REFEREE_REVIEW',
-  AUTHOR_REVISIONS: 'AUTHOR_REVISIONS',
-  WITHDRAWN: 'WITHDRAWN',
-  COPY_EDIT: 'COPY_EDIT',
-  AUTHOR_REVIEW: 'AUTHOR_REVIEW',
-  FORMATTING: 'FORMATTING',
-  PUBLISHED: 'PUBLISHED',
-  EDITOR_REVIEW: 'EDITOR_REVIEW'
-};
+const ACTION_EDIT = 'EDIT';
 
 // Add a new ManuscriptEditor component
 function ManuscriptEditor({ manuscript, userEmail, onSave, onCancel }) {
@@ -228,7 +216,7 @@ function ManuscriptWorkflow({
   }, [editCompleted, refreshManuscript]);
   
   // Check user roles
-  const isEditor = userRoles.includes('ED');
+  const isEditor = userRoles.includes(USER_ROLES.EDITOR);
   const isAuthor = manuscript.author_email === userEmail;
   
   // Handle both cases where backend might send referee_email or referees object
@@ -257,19 +245,19 @@ function ManuscriptWorkflow({
         if (isEditor) {
           actions.push({ 
             label: 'Move to Referee Review', 
-            action: 'REFEREE_REVIEW',
+            action: MANUSCRIPT_STATES.REFEREE_REVIEW,
             color: '#2196f3'
           });
           actions.push({ 
             label: 'Reject', 
-            action: 'REJECTED',
+            action: MANUSCRIPT_STATES.REJECTED,
             color: '#f44336'
           });
         }
         if (isAuthor) {
           actions.push({ 
             label: 'Withdraw', 
-            action: 'WITHDRAWN',
+            action: MANUSCRIPT_STATES.WITHDRAWN,
             color: '#ff9800'
           });
         }
@@ -279,24 +267,24 @@ function ManuscriptWorkflow({
         if (isEditor) {
           actions.push({ 
             label: 'Move back to Submitted', 
-            action: 'SUBMITTED',
+            action: MANUSCRIPT_STATES.SUBMITTED,
             color: '#607d8b'
           });
           actions.push({ 
             label: 'Reject', 
-            action: 'REJECTED',
+            action: MANUSCRIPT_STATES.REJECTED,
             color: '#f44336'
           });
           actions.push({ 
             label: 'Request Author Revisions', 
-            action: 'AUTHOR_REVISIONS',
+            action: MANUSCRIPT_STATES.AUTHOR_REVISIONS,
             color: '#ff9800'
           });
         }
         if (isAuthor) {
           actions.push({ 
             label: 'Withdraw', 
-            action: 'WITHDRAWN',
+            action: MANUSCRIPT_STATES.WITHDRAWN,
             color: '#ff9800'
           });
         }
@@ -309,17 +297,17 @@ function ManuscriptWorkflow({
           if (!isEditing) {
             actions.push({
               label: 'Edit Manuscript',
-              action: 'EDIT',
+              action: ACTION_EDIT,
               color: '#2196f3'
             });
             actions.push({ 
               label: 'Submit Revisions', 
-              action: 'EDITOR_REVIEW',
+              action: MANUSCRIPT_STATES.EDITOR_REVIEW,
               color: '#4caf50'
             });
             actions.push({ 
               label: 'Withdraw', 
-              action: 'WITHDRAWN',
+              action: MANUSCRIPT_STATES.WITHDRAWN,
               color: '#ff9800'
             });
           }
@@ -327,7 +315,7 @@ function ManuscriptWorkflow({
         if (isEditor) {
           actions.push({ 
             label: 'Reject', 
-            action: 'REJECTED',
+            action: MANUSCRIPT_STATES.REJECTED,
             color: '#f44336'
           });
         }
@@ -337,19 +325,19 @@ function ManuscriptWorkflow({
         if (isEditor) {
           actions.push({ 
             label: 'Accept', 
-            action: 'COPY_EDIT',
+            action: MANUSCRIPT_STATES.COPY_EDIT,
             color: '#4caf50'
           });
           actions.push({ 
             label: 'Reject', 
-            action: 'REJECTED',
+            action: MANUSCRIPT_STATES.REJECTED,
             color: '#f44336'
           });
         }
         if (isAuthor) {
           actions.push({ 
             label: 'Withdraw', 
-            action: 'WITHDRAWN',
+            action: MANUSCRIPT_STATES.WITHDRAWN,
             color: '#ff9800'
           });
         }
@@ -359,14 +347,14 @@ function ManuscriptWorkflow({
         if (isEditor) {
           actions.push({ 
             label: 'Mark Complete', 
-            action: 'AUTHOR_REVIEW',
+            action: MANUSCRIPT_STATES.AUTHOR_REVIEW,
             color: '#4caf50'
           });
         }
         if (isAuthor) {
           actions.push({ 
             label: 'Withdraw', 
-            action: 'WITHDRAWN',
+            action: MANUSCRIPT_STATES.WITHDRAWN,
             color: '#ff9800'
           });
         }
@@ -376,12 +364,12 @@ function ManuscriptWorkflow({
         if (isAuthor) {
           actions.push({ 
             label: 'Mark Complete', 
-            action: 'FORMATTING',
+            action: MANUSCRIPT_STATES.FORMATTING,
             color: '#4caf50'
           });
           actions.push({ 
             label: 'Withdraw', 
-            action: 'WITHDRAWN',
+            action: MANUSCRIPT_STATES.WITHDRAWN,
             color: '#ff9800'
           });
         }
@@ -391,14 +379,14 @@ function ManuscriptWorkflow({
         if (isEditor) {
           actions.push({ 
             label: 'Mark Complete', 
-            action: 'PUBLISHED',
+            action: MANUSCRIPT_STATES.PUBLISHED,
             color: '#4caf50'
           });
         }
         if (isAuthor) {
           actions.push({ 
             label: 'Withdraw', 
-            action: 'WITHDRAWN',
+            action: MANUSCRIPT_STATES.WITHDRAWN,
             color: '#ff9800'
           });
         }
@@ -553,7 +541,7 @@ function ManuscriptWorkflow({
         verdict: reviewData.verdict,
         timestamp: new Date().toISOString()
       };
-      localStorage.setItem(`manuscript_review_${manuscript.id}`, JSON.stringify(reviewToSave));
+      localStorage.setItem(`${STORAGE_KEYS.MANUSCRIPT_REVIEW}${manuscript.id}`, JSON.stringify(reviewToSave));
       console.log('Review data saved to localStorage:', reviewToSave);
     } catch (e) {
       console.warn('Could not save review to localStorage:', e);
@@ -669,7 +657,7 @@ function ManuscriptWorkflow({
     // Check if a review was already submitted (stored in localStorage)
     let submittedReview = null;
     try {
-      const savedReview = localStorage.getItem(`manuscript_review_${manuscript.id}`);
+      const savedReview = localStorage.getItem(`${STORAGE_KEYS.MANUSCRIPT_REVIEW}${manuscript.id}`);
       if (savedReview) {
         submittedReview = JSON.parse(savedReview);
       }
@@ -689,7 +677,7 @@ function ManuscriptWorkflow({
               <p style={{marginTop: '10px'}}>
                 <strong>Verdict:</strong>{' '}
                 <span className={`verdict ${submittedReview.verdict.toLowerCase()}`}>
-                  {submittedReview.verdict === 'MINOR_REVISIONS' || submittedReview.verdict === 'MAJOR_REVISIONS' ? 
+                  {submittedReview.verdict === VERDICT_TYPES.MINOR_REVISIONS || submittedReview.verdict === VERDICT_TYPES.MAJOR_REVISIONS ? 
                    'Accept with Revisions' : submittedReview.verdict.replace('_', ' ')}
                 </span>
               </p>
@@ -700,7 +688,7 @@ function ManuscriptWorkflow({
             <button 
               onClick={() => {
                 if (window.confirm('Do you want to submit a new review? This will replace your previous review.')) {
-                  localStorage.removeItem(`manuscript_review_${manuscript.id}`);
+                  localStorage.removeItem(`${STORAGE_KEYS.MANUSCRIPT_REVIEW}${manuscript.id}`);
                   window.location.reload();
                 }
               }}
@@ -732,9 +720,9 @@ function ManuscriptWorkflow({
                   onChange={(e) => setReviewData({...reviewData, verdict: e.target.value})}
                 >
                   <option value="">Select a verdict</option>
-                  <option value="ACCEPT">Accept</option>
-                  <option value="REJECT">Reject</option>
-                  <option value="ACCEPT_WITH_REVISIONS">Accept with Revisions</option>
+                  <option value={VERDICT_TYPES.ACCEPT}>Accept</option>
+                  <option value={VERDICT_TYPES.REJECT}>Reject</option>
+                  <option value={VERDICT_TYPES.ACCEPT_WITH_REVISIONS}>Accept with Revisions</option>
                 </select>
               </div>
               

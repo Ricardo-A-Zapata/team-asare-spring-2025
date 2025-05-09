@@ -8,9 +8,9 @@ import userEvent from '@testing-library/user-event';
 
 jest.mock('axios');
 
-import { BACKEND_URL } from '../../constants';
+import { BACKEND_URL, API_ENDPOINTS, USER_ROLES } from '../../constants';
 
-const USERS_READ_ENDPOINT = `${BACKEND_URL}/user/read`;
+const USERS_READ_ENDPOINT = `${BACKEND_URL}${API_ENDPOINTS.USERS_READ}`;
 const USER_CREATE_ENDPOINT = `${BACKEND_URL}/user/create`;
 const USER_UPDATE_ENDPOINT = `${BACKEND_URL}/user/update`;
 const USER_DELETE_ENDPOINT = `${BACKEND_URL}/user/delete`;
@@ -23,9 +23,9 @@ const renderWithRouter = (ui) => {
 
 // Test data
 const mockRoles = {
-  'AU': 'Author',
-  'ED': 'Editor',
-  'RE': 'Reviewer'
+  [USER_ROLES.AUTHOR]: 'Author',
+  [USER_ROLES.EDITOR]: 'Editor',
+  [USER_ROLES.REFEREE]: 'Reviewer'
 };
 
 const testUsers = [
@@ -33,19 +33,19 @@ const testUsers = [
     name: 'John Doe',
     email: 'user1@example.com',
     affiliation: 'University A',
-    roleCodes: ['AU', 'RE']
+    roleCodes: [USER_ROLES.AUTHOR, USER_ROLES.REFEREE]
   },
   {
     name: 'Jane Smith',
     email: 'user2@example.com',
     affiliation: 'Company B',
-    roleCodes: ['ED']
+    roleCodes: [USER_ROLES.EDITOR]
   },
   {
     name: 'Bob Johnson',
     email: 'user3@example.com',
     affiliation: 'Organization C',
-    roleCodes: ['AU']
+    roleCodes: [USER_ROLES.AUTHOR]
   }
 ];
 
@@ -106,7 +106,7 @@ describe('sortUsers function', () => {
   it('handles missing affiliation values', () => {
     const usersWithMissingData = [
       ...testUsers,
-      { name: 'Alice', email: 'alice@example.com', roleCodes: ['RE'] } // No affiliation
+      { name: 'Alice', email: 'alice@example.com', roleCodes: [USER_ROLES.REFEREE] } // No affiliation
     ];
     
     const result = sortUsers(usersWithMissingData, { key: 'affiliation', direction: 'asc' });
@@ -190,7 +190,7 @@ describe('Users Component', () => {
     
     // Get the role filter and select Editor
     const roleFilter = screen.getByLabelText('Filter by role');
-    fireEvent.change(roleFilter, { target: { value: 'ED' } });
+    fireEvent.change(roleFilter, { target: { value: USER_ROLES.EDITOR } });
     
     // Check that only Jane is displayed (she's the only Editor)
     expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
@@ -324,7 +324,7 @@ describe('Users Component', () => {
           name: 'test',
           email: 'test@gmail.com',
           affiliation: 'nyu',
-          roleCodes: ['AU']
+          roleCodes: [USER_ROLES.AUTHOR]
         }
       ]
     };
@@ -334,9 +334,9 @@ describe('Users Component', () => {
         return Promise.resolve({
           data: {
             roles: {
-              AU: 'Author',
-              ED: 'Editor',
-              RE: 'Reviewer'
+              [USER_ROLES.AUTHOR]: 'Author',
+              [USER_ROLES.EDITOR]: 'Editor',
+              [USER_ROLES.REFEREE]: 'Reviewer'
             }
           }
         });
@@ -400,7 +400,7 @@ describe('Users Component', () => {
     
     // Filter by Author role
     const roleFilter = screen.getByLabelText('Filter by role');
-    fireEvent.change(roleFilter, { target: { value: 'AU' } });
+    fireEvent.change(roleFilter, { target: { value: USER_ROLES.AUTHOR } });
     
     // Check that Bob and John are displayed in alphabetical order
     const userElements = screen.getAllByRole('heading', { level: 2 });
@@ -448,9 +448,9 @@ describe('Loading States', () => {
         return Promise.resolve({
           data: {
             roles: {
-              AU: 'Author',
-              RE: 'Reviewer',
-              ED: 'Editor'
+              [USER_ROLES.AUTHOR]: 'Author',
+              [USER_ROLES.REFEREE]: 'Reviewer',
+              [USER_ROLES.EDITOR]: 'Editor'
             }
           }
         });
@@ -498,7 +498,7 @@ describe('Loading States', () => {
     
     // Select a role
     const roleSelect = screen.getByLabelText('Role');
-    fireEvent.change(roleSelect, { target: { value: 'admin' } });
+    fireEvent.change(roleSelect, { target: { value: USER_ROLES.AUTHOR } });
     
     // Submit the form
     const submitButton = screen.getByText('Add User');
@@ -519,9 +519,9 @@ describe('Loading States', () => {
         return Promise.resolve({
           data: {
             roles: {
-              AU: 'Author',
-              ED: 'Editor',
-              RE: 'Reviewer',
+              [USER_ROLES.AUTHOR]: 'Author',
+              [USER_ROLES.EDITOR]: 'Editor',
+              [USER_ROLES.REFEREE]: 'Reviewer',
             },
           },
         });
@@ -568,9 +568,9 @@ describe('Loading States', () => {
         return Promise.resolve({
           data: {
             roles: {
-              AU: 'Author',
-              ED: 'Editor',
-              RE: 'Reviewer',
+              [USER_ROLES.AUTHOR]: 'Author',
+              [USER_ROLES.EDITOR]: 'Editor',
+              [USER_ROLES.REFEREE]: 'Reviewer',
             },
           },
         });

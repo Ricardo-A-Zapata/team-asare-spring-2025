@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import propTypes from 'prop-types';
 import axios from 'axios';
 
-import { BACKEND_URL } from '../../constants';
+import { BACKEND_URL, API_ENDPOINTS, USER_ROLES } from '../../constants';
 import Loading from '../Loading/Loading';
 import { useAuth } from '../../AuthContext';
 import './Users.css';
@@ -10,7 +10,7 @@ import './Users.css';
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
 
-const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
+const USERS_READ_ENDPOINT = `${backendUrl}${API_ENDPOINTS.USERS_READ}`;
 const USERS_CREATE_ENDPOINT = `${backendUrl}/user/create`;
 const USER_DELETE_ENDPOINT = `${backendUrl}/user/delete`;
 const USER_UPDATE_ENDPOINT = `${backendUrl}/user/update`;
@@ -109,7 +109,7 @@ function UserFilters({ filters, setFilters, roles }) {
         >
           <option value="">All Roles</option>
           {Object.entries(roles || {})
-            .filter(([code]) => code === 'AU' || code === 'ED' || code === 'RE')
+            .filter(([code]) => code === USER_ROLES.AUTHOR || code === USER_ROLES.EDITOR || code === USER_ROLES.REFEREE)
             .map(([code, name]) => (
               <option key={code} value={code}>{name}</option>
           ))}

@@ -3,6 +3,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AddManuscriptForm from './AddManuscriptForm';
 import axios from 'axios';
+import { MANUSCRIPT_STATES, USER_ROLES } from '../../constants';
 
 jest.mock('axios');
 
@@ -16,8 +17,8 @@ const defaultProps = {
 
 // Mock authors data
 const mockAuthors = [
-  { name: 'Alice', email: 'alice@example.com', roleCodes: ['AU'] },
-  { name: 'Bob', email: 'bob@example.com', roleCodes: ['AU', 'RE'] }
+  { name: 'Alice', email: 'alice@example.com', roleCodes: [USER_ROLES.AUTHOR] },
+  { name: 'Bob', email: 'bob@example.com', roleCodes: [USER_ROLES.AUTHOR, USER_ROLES.REFEREE] }
 ];
 
 beforeEach(() => {
@@ -82,7 +83,7 @@ describe('AddManuscriptForm', () => {
         author_email: 'alice@example.com',
         abstract: 'Interesting abstract.',
         text: 'The full manuscript goes here.',
-        state: 'SUBMITTED'
+        state: MANUSCRIPT_STATES.SUBMITTED
       }));
       expect(defaultProps.fetchManuscripts).toHaveBeenCalled();
       expect(defaultProps.cancel).toHaveBeenCalled();
