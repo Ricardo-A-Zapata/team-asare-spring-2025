@@ -9,19 +9,16 @@ import { useAuth } from '../../AuthContext';
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
 const TEXT_READ_ENDPOINT = `${backendUrl}/text/read`;
 const TEXT_UPDATE_ENDPOINT = `${backendUrl}/text/update`;
-const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
+const USER_READ_ENDPOINT = `${backendUrl}/user/read`;
+const MASTHEAD_GET_ENDPOINT = `${backendUrl}/masthead/get`;
+
 
 // Text keys for different sections
 const TEXT_KEYS = {
   INTRO: 'MastheadPage',
   ADMINISTRATORS_INTRO: 'MastheadAdministratorsIntro',
   EDITORS_INTRO: 'MastheadEditorsIntro',
-  REFEREES_INTRO: 'MastheadRefereesIntro',
-  ADMIN_1: 'MastheadAdmin1',
-  ADMIN_2: 'MastheadAdmin2',
-  EDITOR_1: 'MastheadEditor1',
-  EDITOR_2: 'MastheadEditor2',
-  REFEREE_1: 'MastheadReferee1'
+  AUTHORS_INTRO: 'MastheadAuthorsIntro',
 };
 
 // Default content in case API requests fail
@@ -38,30 +35,10 @@ const DEFAULT_CONTENT = {
     title: 'Editorial Staff',
     text: 'Our editors are responsible for reviewing and selecting manuscripts for publication.'
   },
-  [TEXT_KEYS.REFEREES_INTRO]: {
-    title: 'Referees',
-    text: 'Our referees provide expert evaluation of submitted manuscripts.'
+  [TEXT_KEYS.AUTHORS_INTRO]: {
+    title: 'Authors',
+    text: 'Our authors are the bread and butter of our journal, writing high quality, original, groundbreaking work for to advance humanity'
   },
-  [TEXT_KEYS.ADMIN_1]: {
-    title: 'Lead Administrator',
-    text: 'Aayush Daftary\nNew York University\nasd572@nyu.edu'
-  },
-  [TEXT_KEYS.ADMIN_2]: {
-    title: 'System Administrator',
-    text: 'Aurora Cruci\nNew York University\naac9988@nyu.edu'
-  },
-  [TEXT_KEYS.EDITOR_1]: {
-    title: 'Editor',
-    text: 'Eli Edme\nNew York University\neae8374@nyu.edu'
-  },
-  [TEXT_KEYS.EDITOR_2]: {
-    title: 'Editor',
-    text: 'Ricky Zapata\nNew York University\nraz6675@nyu.edu'
-  },
-  [TEXT_KEYS.REFEREE_1]: {
-    title: 'Lead Referee',
-    text: 'Sam Huppert\nNew York University\nsjh9967@nyu.edu'
-  }
 };
 
 function Masthead() {
@@ -71,6 +48,7 @@ function Masthead() {
   const [isLoading, setIsLoading] = useState(true);
   const { isLoggedIn, userEmail } = useAuth();
   const [isEditor, setIsEditor] = useState(false);
+  const [masthead, setMasthead] = useState({});
 
   useEffect(() => {
     const checkIfEditor = async () => {
@@ -80,14 +58,9 @@ function Masthead() {
       }
       
       try {
-        const response = await axios.get(USERS_READ_ENDPOINT);
-        if (response.data && response.data.Users) {
-          const users = Object.values(response.data.Users);
-          const currentUser = users.find(user => user.email === userEmail);
-          
-          if (currentUser && currentUser.roleCodes) {
-            setIsEditor(currentUser.roleCodes.includes('ED'));
-          }
+        const currentUser = (await axios.get(`${USER_READ_ENDPOINT}/${userEmail}`)).data.Users;
+        if (currentUser && currentUser.roleCodes) {
+          setIsEditor(currentUser.roleCodes.includes('ED'));
         }
       } catch (error) {
         console.error('Error checking editor status:', error);
@@ -96,12 +69,23 @@ function Masthead() {
     
     checkIfEditor();
   }, [isLoggedIn, userEmail]);
-
+  const getMasthead = async () => {
+    try {
+      const resp = (await axios.get(MASTHEAD_GET_ENDPOINT)).data.Masthead;
+      if (resp) 
+      {
+        await setMasthead(resp);
+      }
+      // console.log(masthead);
+    } catch (err) {
+      alert(`Error checking editor status: ${err}`);
+    }
+  };
   useEffect(() => {
     const fetchAllContent = async () => {
       try {
         setIsLoading(true);
-        
+        getMasthead();
         // Initialize contents with default values
         const initialContents = { ...DEFAULT_CONTENT };
         
@@ -218,22 +202,6 @@ function Masthead() {
     setCurrentEditKey('');
   };
 
-  // Helper function to format person card content
-  const formatPersonContent = (content) => {
-    if (!content) return ['', '', ''];
-    
-    // Use default if no text or empty text
-    const text = (content.text && content.text.trim()) ? content.text : '';
-    
-    if (!text) return ['', '', ''];
-    
-    const lines = text.split('\n');
-    return [
-      lines[0] || '', // Name
-      lines[1] || '', // Affiliation
-      lines[2] || ''  // Email
-    ];
-  };
 
   if (isEditing && currentEditKey) {
     return <AboutEdit 
@@ -292,47 +260,6 @@ function Masthead() {
             </p>
           )}
           <div className="editors-grid">
-            <div className="editor-card admin">
-              {isEditor && (
-                <button
-                  className="edit-button small corner"
-                  onClick={() => handleEditClick(TEXT_KEYS.ADMIN_1)}
-                >
-                  Edit
-                </button>
-              )}
-              {isLoading ? (
-                <p>Loading...</p>
-              ) : (
-                <>
-                  <h4>{formatPersonContent(contents[TEXT_KEYS.ADMIN_1])[0]}</h4>
-                  <p className="title">{contents[TEXT_KEYS.ADMIN_1]?.title || DEFAULT_CONTENT[TEXT_KEYS.ADMIN_1].title}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.ADMIN_1])[1]}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.ADMIN_1])[2]}</p>
-                </>
-              )}
-            </div>
-            
-            <div className="editor-card admin">
-              {isEditor && (
-                <button
-                  className="edit-button small corner"
-                  onClick={() => handleEditClick(TEXT_KEYS.ADMIN_2)}
-                >
-                  Edit
-                </button>
-              )}
-              {isLoading ? (
-                <p>Loading...</p>
-              ) : (
-                <>
-                  <h4>{formatPersonContent(contents[TEXT_KEYS.ADMIN_2])[0]}</h4>
-                  <p className="title">{contents[TEXT_KEYS.ADMIN_2]?.title || DEFAULT_CONTENT[TEXT_KEYS.ADMIN_2].title}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.ADMIN_2])[1]}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.ADMIN_2])[2]}</p>
-                </>
-              )}
-            </div>
           </div>
         </div>
 
@@ -356,57 +283,28 @@ function Masthead() {
             </p>
           )}
           <div className="editors-grid">
-            <div className="editor-card">
-              {isEditor && (
-                <button
-                  className="edit-button small corner"
-                  onClick={() => handleEditClick(TEXT_KEYS.EDITOR_1)}
-                >
-                  Edit
-                </button>
-              )}
-              {isLoading ? (
-                <p>Loading...</p>
-              ) : (
-                <>
-                  <h4>{formatPersonContent(contents[TEXT_KEYS.EDITOR_1])[0]}</h4>
-                  <p className="title">{contents[TEXT_KEYS.EDITOR_1]?.title || DEFAULT_CONTENT[TEXT_KEYS.EDITOR_1].title}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.EDITOR_1])[1]}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.EDITOR_1])[2]}</p>
-                </>
-              )}
-            </div>
-
-            <div className="editor-card">
-              {isEditor && (
-                <button
-                  className="edit-button small corner"
-                  onClick={() => handleEditClick(TEXT_KEYS.EDITOR_2)}
-                >
-                  Edit
-                </button>
-              )}
-              {isLoading ? (
-                <p>Loading...</p>
-              ) : (
-                <>
-                  <h4>{formatPersonContent(contents[TEXT_KEYS.EDITOR_2])[0]}</h4>
-                  <p className="title">{contents[TEXT_KEYS.EDITOR_2]?.title || DEFAULT_CONTENT[TEXT_KEYS.EDITOR_2].title}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.EDITOR_2])[1]}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.EDITOR_2])[2]}</p>
-                </>
-              )}
-            </div>
+          {masthead.Editor && masthead.Editor.length > 0 ? 
+            masthead.Editor.map((user, idx) => (
+            <div key = {idx} className="editor-card">
+              <h4>{user.name}</h4>
+              <p className="title">Editor</p>
+              <p>{user.affiliation}</p>
+              <p>{user.email}</p>
+              </div>
+            ))
+            :
+            <p>No Editors</p>
+            }
           </div>
         </div>
 
         <div className="role-section">
           <div className="section-header">
-            <h3>{contents[TEXT_KEYS.REFEREES_INTRO]?.title || DEFAULT_CONTENT[TEXT_KEYS.REFEREES_INTRO].title}</h3>
+            <h3>{contents[TEXT_KEYS.AUTHORS_INTRO]?.title || DEFAULT_CONTENT[TEXT_KEYS.AUTHORS_INTRO].title}</h3>
             {isEditor && (
               <button
                 className="edit-button small"
-                onClick={() => handleEditClick(TEXT_KEYS.REFEREES_INTRO)}
+                onClick={() => handleEditClick(TEXT_KEYS.AUTHORS_INTRO)}
               >
                 Edit
               </button>
@@ -416,35 +314,26 @@ function Masthead() {
             <p>Loading content...</p>
           ) : (
             <p className="section-intro">
-              {contents[TEXT_KEYS.REFEREES_INTRO]?.text || DEFAULT_CONTENT[TEXT_KEYS.REFEREES_INTRO].text}
+              {contents[TEXT_KEYS.AUTHORS_INTRO]?.text || DEFAULT_CONTENT[TEXT_KEYS.AUTHORS_INTRO].text}
             </p>
           )}
-          <div className="editors-grid">
-            <div className="editor-card referee">
-              {isEditor && (
-                <button
-                  className="edit-button small corner"
-                  onClick={() => handleEditClick(TEXT_KEYS.REFEREE_1)}
-                >
-                  Edit
-                </button>
-              )}
-              {isLoading ? (
-                <p>Loading...</p>
-              ) : (
-                <>
-                  <h4>{formatPersonContent(contents[TEXT_KEYS.REFEREE_1])[0]}</h4>
-                  <p className="title">{contents[TEXT_KEYS.REFEREE_1]?.title || DEFAULT_CONTENT[TEXT_KEYS.REFEREE_1].title}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.REFEREE_1])[1]}</p>
-                  <p>{formatPersonContent(contents[TEXT_KEYS.REFEREE_1])[2]}</p>
-                </>
-              )}
+            <div className="editors-grid">
+              {masthead.Author && masthead.Author.length > 0 ? masthead.Author.map((user, idx) => (
+              <div key = {idx} className="editor-card author">
+                <h4>{user.name}</h4>
+                <p className="title">Referee</p>
+                <p>{user.affiliation}</p>
+                <p>{user.email}</p>
+              </div>
+              )):
+              <p>No Authors</p>
+              }
             </div>
-          </div>
         </div>
+
+
       </section>
     </div>
-  );
+  )
 }
-
 export default Masthead; 

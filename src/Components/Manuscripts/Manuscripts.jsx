@@ -12,6 +12,7 @@ import './Manuscripts.css';
 // Remove trailing slash if present to ensure proper URL formation
 const backendUrl = BACKEND_URL.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
 const MANUSCRIPTS_READ_ENDPOINT = `${backendUrl}/manuscripts`;
+const USERS_READ_ENDPOINT = `${backendUrl}/user/read`;
 
 // Helper function to convert manuscripts object to array
 function manuscriptsToArray(manuscripts) {
@@ -194,29 +195,37 @@ function Manuscripts() {
   const [isOperationLoading, setIsOperationLoading] = useState(false);
   const [sortConfig, setSortConfig] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, userEmail } = useAuth();
 
   const fetchManuscripts = async () => {
     try {
       setIsLoading(true);
       setError('');
       
-      console.log('Fetching manuscripts from:', MANUSCRIPTS_READ_ENDPOINT);
       const { data } = await axios.get(MANUSCRIPTS_READ_ENDPOINT);
-      console.log('Response data:', data);
       
       if (data && data.manuscripts) {
-        const manuscriptsArray = manuscriptsToArray(data.manuscripts);
-        console.log('Manuscripts array:', manuscriptsArray);
+        let manuscriptsArray = manuscriptsToArray(data.manuscripts);
+        
+        // Get current user's roles
+        const { data: userData } = await axios.get(USERS_READ_ENDPOINT);
+        const users = Object.values(userData.Users);
+        const currentUser = users.find(user => user.email === userEmail);
+        
+        // If user is not an editor, only show their own manuscripts
+        if (currentUser && !currentUser.roleCodes?.includes('ED')) {
+          manuscriptsArray = manuscriptsArray.filter(manuscript => 
+            manuscript.author_email.toLowerCase() === userEmail.toLowerCase()
+          );
+        }
+        
         setManuscripts(manuscriptsArray);
         setFilteredManuscripts(manuscriptsArray);
       } else {
         setError('Invalid response format from the server');
-        console.error('Invalid response format:', data);
       }
     } catch (error) {
       setError('There was a problem retrieving manuscripts. Please try again later.');
-      console.error('Error fetching manuscripts:', error);
     } finally {
       setIsLoading(false);
     }
