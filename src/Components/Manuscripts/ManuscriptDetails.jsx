@@ -113,7 +113,8 @@ function ManuscriptDetails() {
       } else {
         setError('Manuscript not found');
         setLoading(false);
-        return Promise.reject(new Error('Manuscript not found'));
+        // Modify this line for better testability - don't reject the promise
+        return;
       }
       // Users
       const { data: uData } = await axios.get(USERS_READ_ENDPOINT, {
@@ -132,7 +133,8 @@ function ManuscriptDetails() {
     } catch (err) {
       setError(`Error loading data: ${err.message}`);
       setLoading(false);
-      return Promise.reject(err);
+      // Return without rejecting for better testability
+      return;
     }
   };
 

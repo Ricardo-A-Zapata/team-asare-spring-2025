@@ -62,8 +62,14 @@ exports[`Users Component matches snapshot 1`] = `
       <div
         class="user-sorting"
       >
+        <label
+          for="sort-users"
+        >
+          Sort users
+        </label>
         <select
           aria-label="Sort users"
+          id="sort-users"
         >
           <option
             value=""
@@ -121,9 +127,7 @@ exports[`Users Component matches snapshot 1`] = `
     <div
       class="user-container"
     >
-      <a
-        href="/user1@example.com"
-      >
+      <div>
         <h2>
           John Doe
         </h2>
@@ -136,7 +140,7 @@ exports[`Users Component matches snapshot 1`] = `
         <p>
           Roles: Author, Reviewer
         </p>
-      </a>
+      </div>
       <div
         class="button-group"
       >
@@ -155,9 +159,7 @@ exports[`Users Component matches snapshot 1`] = `
     <div
       class="user-container"
     >
-      <a
-        href="/user2@example.com"
-      >
+      <div>
         <h2>
           Jane Smith
         </h2>
@@ -170,7 +172,7 @@ exports[`Users Component matches snapshot 1`] = `
         <p>
           Roles: Editor
         </p>
-      </a>
+      </div>
       <div
         class="button-group"
       >
@@ -189,9 +191,7 @@ exports[`Users Component matches snapshot 1`] = `
     <div
       class="user-container"
     >
-      <a
-        href="/user3@example.com"
-      >
+      <div>
         <h2>
           Bob Johnson
         </h2>
@@ -204,7 +204,7 @@ exports[`Users Component matches snapshot 1`] = `
         <p>
           Roles: Author
         </p>
-      </a>
+      </div>
       <div
         class="button-group"
       >

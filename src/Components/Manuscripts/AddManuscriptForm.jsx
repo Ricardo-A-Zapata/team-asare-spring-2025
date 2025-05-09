@@ -28,9 +28,16 @@ function AddManuscriptForm({ visible, cancel, fetchManuscripts, setError, setIsO
   // Focus the title input when the form becomes visible
   useEffect(() => {
     if (visible && titleInputRef.current) {
-      setTimeout(() => {
-        titleInputRef.current.focus();
-      }, 100);
+      try {
+        setTimeout(() => {
+          // Add a null check to avoid the error in tests
+          if (titleInputRef.current) {
+            titleInputRef.current.focus();
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Error focusing title input:', error);
+      }
     }
   }, [visible]);
 
