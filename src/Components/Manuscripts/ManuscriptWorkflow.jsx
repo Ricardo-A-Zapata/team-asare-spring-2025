@@ -47,6 +47,24 @@ function ManuscriptEditor({ manuscript, userEmail, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // Log initial values
+  useEffect(() => {
+    console.log('ManuscriptEditor initial values:');
+    console.log('manuscript.text:', manuscript.text);
+    console.log('manuscript.abstract:', manuscript.abstract);
+    console.log('newText state:', newText);
+    console.log('newAbstract state:', newAbstract);
+  }, []);
+
+  // Log when values change
+  useEffect(() => {
+    console.log('Text value changed to:', newText);
+  }, [newText]);
+  
+  useEffect(() => {
+    console.log('Abstract value changed to:', newAbstract);
+  }, [newAbstract]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -60,23 +78,51 @@ function ManuscriptEditor({ manuscript, userEmail, onSave, onCancel }) {
         author_email: userEmail
       });
       
-      const response = await axios.put(
-        `${MANUSCRIPT_TEXT_ENDPOINT}/${manuscript.id}`,
-        {
-          new_text: newText,
-          new_abstract: newAbstract,
-          author_email: userEmail
-        },
-        {
-          headers: {
-            'X-User-Email': userEmail,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      // Log the endpoint being used
+      console.log('Endpoint URL:', `${MANUSCRIPT_TEXT_ENDPOINT}/${manuscript.id}`);
       
-      console.log('Server response after update:', response.data);
-      onSave();
+      // Try direct manuscript update first
+      try {
+        const response = await axios.put(
+          `${MANUSCRIPT_TEXT_ENDPOINT}/${manuscript.id}`,
+          {
+            new_text: newText,
+            new_abstract: newAbstract,
+            author_email: userEmail
+          },
+          {
+            headers: {
+              'X-User-Email': userEmail,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        console.log('Server response after update:', response.data);
+        onSave();
+      } catch (endpointErr) {
+        console.error('Manuscript text endpoint failed, trying direct manuscript update', endpointErr);
+        
+        // Fallback: Update the manuscript directly
+        console.log('Trying direct manuscript update');
+        const directUpdateResponse = await axios.put(
+          `${backendUrl}/manuscripts/${manuscript.id}`,
+          {
+            ...manuscript,
+            text: newText,
+            abstract: newAbstract
+          },
+          {
+            headers: {
+              'X-User-Email': userEmail,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        console.log('Direct update response:', directUpdateResponse.data);
+        onSave();
+      }
     } catch (err) {
       console.error('Full error:', err);
       setError(`Error saving manuscript: ${err.response?.data?.error || err.message}`);
@@ -298,11 +344,6 @@ function ManuscriptWorkflow({
             label: 'Reject', 
             action: 'REJECTED',
             color: '#f44336'
-          });
-          actions.push({ 
-            label: 'Request More Revisions', 
-            action: 'AUTHOR_REVISIONS',
-            color: '#ff9800'
           });
         }
         if (isAuthor) {
