@@ -14,7 +14,7 @@ const USERS_READ_ENDPOINT = `${backendUrl}${API_ENDPOINTS.USERS_READ}`;
 const USERS_CREATE_ENDPOINT = `${backendUrl}/user/create`;
 const USER_DELETE_ENDPOINT = `${backendUrl}/user/delete`;
 const USER_UPDATE_ENDPOINT = `${backendUrl}/user/update`;
-const ROLES_READ_ENDPOINT = `${backendUrl}/roles`;
+const ROLES_READ_ENDPOINT = `${backendUrl}/roles/read`;
 // Remove the unused ROLES_ENDPOINT variable
 // const ROLES_ENDPOINT = `${BACKEND_URL}/roles`;
 
@@ -160,7 +160,9 @@ function UserSorting({ sortConfig, setSortConfig }) {
   
   return (
     <div className="user-sorting">
+      <label htmlFor="sort-users">Sort users</label>
       <select 
+        id="sort-users"
         value={currentValue}
         onChange={handleSortChange}
         aria-label="Sort users"
@@ -686,7 +688,7 @@ function Users() {
         <>
           <header>
             <h1>View All Users</h1>
-            {currentUserRoles.includes('ED') && (
+            {currentUserRoles.includes(USER_ROLES.EDITOR) && (
               <button 
                 type="button" 
                 onClick={showAddUserForm}
@@ -697,7 +699,7 @@ function Users() {
             )}
           </header>
           
-          {!currentUserRoles.includes('ED') && (
+          {!currentUserRoles.includes(USER_ROLES.EDITOR) && (
             <div className="permission-notice">
               You are viewing users in read-only mode. Editor privileges are required to add, edit, or delete users.
             </div>

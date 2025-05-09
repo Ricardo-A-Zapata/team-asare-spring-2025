@@ -22,16 +22,9 @@ exports[`Navbar Component matches snapshot 1`] = `
       </li>
       <li>
         <a
-          href="/users"
+          href="/masthead"
         >
-          View All Users
-        </a>
-      </li>
-      <li>
-        <a
-          href="/submissions"
-        >
-          View All Submissions
+          Masthead
         </a>
       </li>
       <li>
@@ -39,6 +32,20 @@ exports[`Navbar Component matches snapshot 1`] = `
           href="/manuscripts"
         >
           View All Manuscripts
+        </a>
+      </li>
+      <li>
+        <a
+          href="/login"
+        >
+          Login
+        </a>
+      </li>
+      <li>
+        <a
+          href="/signup"
+        >
+          Sign up
         </a>
       </li>
     </ul>

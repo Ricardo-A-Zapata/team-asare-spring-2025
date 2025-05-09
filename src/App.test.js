@@ -40,6 +40,63 @@ beforeEach(() => {
       });
     }
 
+    if (url.includes('/text/read/HomePage')) {
+      return Promise.resolve({
+        data: { 
+          Content: {
+            title: 'Mock Home Page',
+            text: 'Welcome to the test journal'
+          }
+        },
+      });
+    }
+
+    if (url.includes('/text/read/AboutPage')) {
+      return Promise.resolve({
+        data: { 
+          Content: {
+            title: 'About Our Journal',
+            text: 'This is our test journal'
+          }
+        },
+      });
+    }
+
+    if (url.includes('/text/read/MissionPage')) {
+      return Promise.resolve({
+        data: { 
+          Content: {
+            title: 'Our Mission',
+            text: 'To provide a testing platform'
+          }
+        },
+      });
+    }
+
+    if (url.includes('/user/read')) {
+      return Promise.resolve({
+        data: { 
+          Users: {
+            'admin@example.com': {
+              email: 'admin@example.com',
+              name: 'Admin User',
+              roleCodes: ['ED']
+            }
+          }
+        },
+      });
+    }
+
+    if (url.includes('/roles/read')) {
+      return Promise.resolve({
+        data: { 
+          AU: 'Author', 
+          ED: 'Editor', 
+          RE: 'Reviewer' 
+        },
+      });
+    }
+
     return Promise.reject(new Error(`Unhandled URL: ${url}`));
   });
 });
@@ -58,13 +115,13 @@ test('renders Home component by default', () => {
   expect(screen.getByText(/home/i)).toBeInTheDocument();
 });
 
-test('navigates to Users page when link is clicked', async () => {
+test('navigates to About page when link is clicked', async () => {
   render(<App />);
 
-  const usersLink = screen.getByRole('link', { name: /view all users/i });
-  await userEvent.click(usersLink);
+  const aboutLink = screen.getByRole('link', { name: /about/i });
+  await userEvent.click(aboutLink);
 
-  expect(await screen.findByRole('heading', { name: /view all users/i })).toBeInTheDocument();
+  expect(await screen.findByRole('heading', { name: /about/i })).toBeInTheDocument();
 });
 
 test('navigates to Manuscripts page via Navbar link', async () => {
@@ -73,5 +130,5 @@ test('navigates to Manuscripts page via Navbar link', async () => {
   const manuscriptsLink = screen.getByRole('link', { name: /view all manuscripts/i });
   await userEvent.click(manuscriptsLink);
 
-  expect(await screen.findByRole('heading', { name: /manuscripts/i })).toBeInTheDocument();
+  expect(await screen.findByRole('heading', { name: /view all manuscripts/i })).toBeInTheDocument();
 });
