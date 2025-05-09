@@ -4,8 +4,12 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AddManuscriptForm from './AddManuscriptForm';
 import axios from 'axios';
 import { MANUSCRIPT_STATES, USER_ROLES } from '../../constants';
+import { AuthProvider } from '../../AuthContext';
 
 jest.mock('axios');
+
+// Mock window.alert
+window.alert = jest.fn();
 
 const defaultProps = {
   visible: true,
@@ -21,31 +25,53 @@ const mockAuthors = [
   { name: 'Bob', email: 'bob@example.com', roleCodes: [USER_ROLES.AUTHOR, USER_ROLES.REFEREE] }
 ];
 
+// Helper function to render component with AuthProvider
+const renderWithAuth = (component) => {
+  return render(
+    <AuthProvider>
+      {component}
+    </AuthProvider>
+  );
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
   
   // Mock the user data fetch
   axios.get.mockImplementation((url) => {
     if (url.includes('/user/read')) {
-      return Promise.resolve({ data: { Users: mockAuthors } });
+      return Promise.resolve({ 
+        data: { 
+          Users: {
+            'alice@example.com': mockAuthors[0],
+            'bob@example.com': mockAuthors[1]
+          } 
+        } 
+      });
     }
     return Promise.resolve({ data: {} });
   });
+
+  // Set up default PUT response
+  axios.put.mockResolvedValue({ data: { success: true } });
 });
 
 describe('AddManuscriptForm', () => {
-  it('fetches authors on mount', async () => {
-    render(<AddManuscriptForm {...defaultProps} />);
+  it('shows guest submission form when not logged in', async () => {
+    renderWithAuth(<AddManuscriptForm {...defaultProps} />);
     
     await waitFor(() => {
-      expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('/user/read'));
+      // Check that we see the guest submission form
+      expect(screen.getByText('Guest Submission')).toBeInTheDocument();
+      expect(screen.getByLabelText('Name *')).toBeInTheDocument();
+      expect(screen.getByLabelText('Email *')).toBeInTheDocument();
     });
   });
 
-  it('shows error if required fields are empty', async () => {
-    render(<AddManuscriptForm {...defaultProps} />);
+  it('shows error if required fields are empty on guest submission', async () => {
+    renderWithAuth(<AddManuscriptForm {...defaultProps} />);
     
-    // Fill in title, abstract and text but not author (selected from dropdown)
+    // Fill in title, abstract and text but not guest author name/email
     fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Quantum Stuff' } });
     fireEvent.change(screen.getByLabelText(/abstract/i), { target: { value: 'Interesting abstract.' } });
     fireEvent.change(screen.getByLabelText(/manuscript text/i), { target: { value: 'The full manuscript goes here.' } });
@@ -53,34 +79,37 @@ describe('AddManuscriptForm', () => {
     fireEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     await waitFor(() => {
-      expect(defaultProps.setError).toHaveBeenCalledWith('All fields are required');
+      // Check for the guest author validation error
+      expect(screen.getByText('Author name and email are required for guest submissions')).toBeInTheDocument();
     });
   });
 
-  it('submits correct data and resets form on success', async () => {
+  it('submits correct guest data on success', async () => {
     axios.put.mockResolvedValueOnce({ data: { success: true } });
 
-    render(<AddManuscriptForm {...defaultProps} />);
+    renderWithAuth(<AddManuscriptForm {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/select author/i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Name *')).toBeInTheDocument();
     });
 
-    // Fill in form fields
+    // Fill in form fields for guest
+    const guestName = 'Guest Author';
+    const guestEmail = 'guest@example.com';
+    
+    fireEvent.change(screen.getByLabelText('Name *'), { target: { value: guestName } });
+    fireEvent.change(screen.getByLabelText('Email *'), { target: { value: guestEmail } });
     fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Quantum Stuff' } });
     fireEvent.change(screen.getByLabelText(/abstract/i), { target: { value: 'Interesting abstract.' } });
     fireEvent.change(screen.getByLabelText(/manuscript text/i), { target: { value: 'The full manuscript goes here.' } });
-    
-    // Select an author from dropdown
-    fireEvent.change(screen.getByLabelText(/select author/i), { target: { value: 'alice@example.com' } });
     
     fireEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     await waitFor(() => {
       expect(axios.put).toHaveBeenCalledWith(expect.stringContaining('/manuscript/create'), expect.objectContaining({
         title: 'Quantum Stuff',
-        author: 'Alice',
-        author_email: 'alice@example.com',
+        author: guestName,
+        author_email: guestEmail,
         abstract: 'Interesting abstract.',
         text: 'The full manuscript goes here.',
         state: MANUSCRIPT_STATES.SUBMITTED
@@ -91,43 +120,62 @@ describe('AddManuscriptForm', () => {
   });
 
   it('handles API error gracefully', async () => {
-    axios.put.mockRejectedValueOnce({ message: 'Something went wrong' });
+    const errorResponse = { 
+      message: 'Something went wrong',
+      response: { data: { message: 'Server error' } }
+    };
+    
+    // First mock call to get user info should work
+    axios.get.mockImplementationOnce((url) => {
+      if (url.includes('/user/read')) {
+        return Promise.resolve({ 
+          data: { 
+            Users: {
+              'alice@example.com': mockAuthors[0],
+              'bob@example.com': mockAuthors[1]
+            } 
+          } 
+        });
+      }
+      return Promise.resolve({ data: {} });
+    });
+    
+    // But the PUT call should fail
+    axios.put.mockRejectedValueOnce(errorResponse);
 
-    render(<AddManuscriptForm {...defaultProps} />);
+    renderWithAuth(<AddManuscriptForm {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/select author/i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Name *')).toBeInTheDocument();
     });
 
-    // Fill in form fields
+    // Fill in form fields for guest
+    fireEvent.change(screen.getByLabelText('Name *'), { target: { value: 'Guest Author' } });
+    fireEvent.change(screen.getByLabelText('Email *'), { target: { value: 'guest@example.com' } });
     fireEvent.change(screen.getByLabelText(/title/i), { target: { value: 'Test' } });
     fireEvent.change(screen.getByLabelText(/abstract/i), { target: { value: 'Test' } });
     fireEvent.change(screen.getByLabelText(/manuscript text/i), { target: { value: 'Test' } });
-    
-    // Select an author from dropdown
-    fireEvent.change(screen.getByLabelText(/select author/i), { target: { value: 'alice@example.com' } });
 
     fireEvent.click(screen.getByRole('button', { name: /submit/i }));
 
     await waitFor(() => {
-      expect(defaultProps.setError).toHaveBeenCalledWith('Error creating manuscript: Something went wrong');
+      expect(defaultProps.setError).toHaveBeenCalledWith('Error creating manuscript: Server error');
     });
   });
   
-  it('displays author information when selected', async () => {
-    render(<AddManuscriptForm {...defaultProps} />);
+  it('allows setting guest affiliation', async () => {
+    renderWithAuth(<AddManuscriptForm {...defaultProps} />);
     
     await waitFor(() => {
-      expect(screen.getByLabelText(/select author/i)).toBeInTheDocument();
+      expect(screen.getByLabelText('Name *')).toBeInTheDocument();
     });
     
-    // Select an author from dropdown
-    fireEvent.change(screen.getByLabelText(/select author/i), { target: { value: 'alice@example.com' } });
+    // Fill in guest author information including affiliation
+    fireEvent.change(screen.getByLabelText('Name *'), { target: { value: 'Guest Author' } });
+    fireEvent.change(screen.getByLabelText('Email *'), { target: { value: 'guest@example.com' } });
+    fireEvent.change(screen.getByLabelText('Affiliation (Optional)'), { target: { value: 'University XYZ' } });
     
-    await waitFor(() => {
-      expect(screen.getByText(/name:/i)).toBeInTheDocument();
-      expect(screen.getByText(/email:/i)).toBeInTheDocument();
-      expect(screen.getByText(/alice@example.com/i)).toBeInTheDocument();
-    });
+    // Verify the affiliation input value is set
+    expect(screen.getByLabelText('Affiliation (Optional)')).toHaveValue('University XYZ');
   });
 });
